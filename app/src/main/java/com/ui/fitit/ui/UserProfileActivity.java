@@ -1,4 +1,4 @@
-package com.ui.fitit.activities;
+package com.ui.fitit.ui;
 
 import android.os.Bundle;
 import android.widget.TextView;
