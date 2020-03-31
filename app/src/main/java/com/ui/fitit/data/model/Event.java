@@ -1,4 +1,4 @@
-package com.ui.fitit.models;
+package com.ui.fitit.data.model;
 
 import java.time.LocalTime;
 import java.util.List;
