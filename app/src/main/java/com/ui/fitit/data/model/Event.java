@@ -5,9 +5,11 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
+@Data
+@NoArgsConstructor
 public class Event {
     private LocalTime start;
     private LocalTime end;

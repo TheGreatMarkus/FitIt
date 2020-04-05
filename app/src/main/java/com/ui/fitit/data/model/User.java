@@ -1,7 +1,5 @@
 package com.ui.fitit.data.model;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +7,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-public class Session {
-    private LocalDate date;
-    private boolean attended;
+public class User {
+    String username;
+    String hashedPassword;
+    String fullName;
 }
