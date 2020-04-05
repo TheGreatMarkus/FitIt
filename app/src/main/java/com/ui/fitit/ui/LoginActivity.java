@@ -60,8 +60,7 @@ public class LoginActivity extends AppCompatActivity {
         final String passwordText = this.passwordEditText.getText().toString();
         this.passwordEditText.setText("");
         final String fullNameText = this.fullNameEditText.getText().toString();
-        if (usernameText.isEmpty() || passwordText.isEmpty()) {
-            Toast.makeText(this, "Please fill in both the username and password fields", Toast.LENGTH_SHORT).show();
+        if (!validateForm(usernameText, passwordText)) {
             return;
         }
 
@@ -73,17 +72,20 @@ public class LoginActivity extends AppCompatActivity {
                     if (login && existingUser != null
                             && existingUser.getHashedPassword() != null
                             && existingUser.getHashedPassword().equals(hashPassword(passwordText))) {
+                        // TODO Redirect to landing page when login successful
                         Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + usernameText, Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(LoginActivity.this, "Password incorrect: " + usernameText, Toast.LENGTH_SHORT).show();
                     }
                 } else if (login) {
+                    usernameEditText.setText("");
                     Toast.makeText(LoginActivity.this, "Login failed: User doesn't exist: " + usernameText, Toast.LENGTH_SHORT).show();
                 } else {
                     String hashedPassword = hashPassword(passwordText);
 
                     User user = new User(usernameText, hashedPassword, fullNameText);
                     users.document(user.getUsername()).set(user);
+                    // TODO Redirect to landing page when account creation successful
                     Toast.makeText(LoginActivity.this, "User created successfully " + usernameText, Toast.LENGTH_SHORT).show();
 
                 }
@@ -96,6 +98,22 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    private boolean validateForm(String usernameText, String passwordText) {
+        if (usernameText.isEmpty()) {
+            Toast.makeText(this, "Please write your username in the field", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (!usernameText.matches("^[a-zA-Z0-9-]*$")) {
+            Toast.makeText(this, "Your username should only have alphanumeric characters and dashes '-'", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (passwordText.length() < 8) {
+            Toast.makeText(this, "Please write your pass", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
+
 
     public void onSwitch(View view) {
         login = !login;
@@ -103,6 +121,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
+        usernameEditText.setText("");
+        passwordEditText.setText("");
+        fullNameEditText.setText("");
         if (login) {
             fullNameEditText.setVisibility(View.GONE);
             confirmButton.setText(R.string.login_button_text);
