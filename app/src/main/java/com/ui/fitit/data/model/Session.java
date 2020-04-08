@@ -11,8 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
-@Getter
-@Setter
 public class Session {
     private LocalDate date;
     private Event event;
