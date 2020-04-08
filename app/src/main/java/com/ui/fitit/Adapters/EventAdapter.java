@@ -1,51 +1,51 @@
 package com.ui.fitit.Adapters;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-
 import com.ui.fitit.R;
-import com.ui.fitit.data.model.Event;
-
+import com.ui.fitit.data.model.Session;
 import java.util.List;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
-public class EventAdapter extends ArrayAdapter<Event> {
+public class EventAdapter extends ArrayAdapter<Session> {
     private Context context;
-    private List<Event> events;
+    private List<Session> sessions;
 
     // UI Elements
-    private TextView title;
+    private TextView name;
     private TextView time;
     private TextView location;
     private TextView day;
     private TextView month;
 
-    public EventAdapter(@NonNull Context context, int textViewResourceId, @NonNull List<Event> events) {
-        super(context, textViewResourceId, events);
-        this.events = events;
+    public EventAdapter(@NonNull Context context, int textViewResourceId, @NonNull List<Session> sessions) {
+        super(context, textViewResourceId, sessions);
+        this.sessions = sessions;
         this.context = context;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View viewToDisplay = LayoutInflater.from(this.getContext()).inflate(R.layout.list_events, parent, false);
+        View viewToDisplay = LayoutInflater.from(this.getContext()).inflate(R.layout.list_sessions, parent, false);
         initComponent(viewToDisplay);
 
-        Event event = getItem(position);
+        Session session = getItem(position);
 
-        if (event != null)
-            setUIElements(event);
+        if (session != null)
+            setUIElements(session);
 
         return viewToDisplay;
     }
 
     private void initComponent(View convertView) {
-        title = convertView.findViewById(R.id.eventTitle);
+        name = convertView.findViewById(R.id.eventTitle);
         time = convertView.findViewById(R.id.time);
         location = convertView.findViewById(R.id.location);
         day = convertView.findViewById(R.id.day);
@@ -53,15 +53,21 @@ public class EventAdapter extends ArrayAdapter<Event> {
     }
 
     @Override
-    public Event getItem(int i) {
-        return events.get(i);
+    public Session getItem(int i) {
+        return sessions.get(i);
     }
 
     @Override
     public int getCount() {
-        return events.size();
+        return sessions.size();
     }
 
-    public void setUIElements(Event event) {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void setUIElements(Session session) {
+        name.setText(session.getEvent().getName());
+        time.setText(session.getEvent().getStart().toString() + " - " + session.getEvent().getEnd().toString());
+        location.setText(session.getEvent().getLocation());
+        day.setText(String.valueOf(session.getDate().getDayOfMonth()));
+        month.setText(session.getDate().getMonth().toString());
     }
 }
