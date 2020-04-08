@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Session {
     private LocalDate date;
+    private Event event;
     private boolean attended;
 }
