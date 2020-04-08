@@ -14,5 +14,7 @@ public class Event {
     private LocalTime start;
     private LocalTime end;
     private List<Session> sessionList;
+    private String description;
+    private String title;
     private String place;
 }
