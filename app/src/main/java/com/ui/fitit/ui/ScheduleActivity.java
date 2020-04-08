@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,37 +18,24 @@ public class ScheduleActivity extends AppCompatActivity {
 
     List<Event> events;
     EventAdapter adapter;
+    ListView allEvents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.schedule_activity);
+        allEvents = findViewById(R.id.allEvents);
+        setEventsAdapter();
     }
 
     private void setEventsAdapter() {
-// Android adapter for list view
-        adapter = new RoutesAdapter(this, R.layout.list_routes, mViewModel.getRouteOptions());
-        allRoutes.setAdapter(adapter);
-        allRoutes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        // Android adapter for list view
+        adapter = new EventAdapter(this, R.layout.list_events, events);
+        allEvents.setAdapter(adapter);
+        allEvents.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (carButton.isSelected() || transitButton.isSelected() || walkButton.isSelected()) {
-                    Intent openPaths = new Intent(RoutesActivity.this,
-                            PathsActivity.class);
-                    DirectionsRoute directionsResult = mViewModel.getDirectionsResult().routes[i];
-                    openPaths.putExtra("directionsResult", directionsResult);
-                    openPaths.putExtra("shuttle", false);
-                    startActivity(openPaths);
-                } else {
-                    if (mViewModel.getShuttles() == null) {
-                        Toast.makeText(getApplicationContext(), "Paths view for Shuttle route is not available if no shuttles exist.", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Intent openPaths = new Intent(RoutesActivity.this,
-                                PathsActivity.class);
-                        openPaths.putExtra("shuttle", true);
-                        startActivity(openPaths);
-                    }
-                }
+
             }
         });
     }
