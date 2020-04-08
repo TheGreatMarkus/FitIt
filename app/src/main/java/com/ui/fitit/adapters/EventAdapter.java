@@ -1,4 +1,4 @@
-package com.ui.fitit.Adapters;
+package com.ui.fitit.adapters;
 
 import android.content.Context;
 import android.os.Build;
@@ -7,11 +7,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import com.ui.fitit.R;
-import com.ui.fitit.data.model.Session;
-import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
+import com.ui.fitit.R;
+import com.ui.fitit.data.model.Session;
+
+import java.util.List;
 
 public class EventAdapter extends ArrayAdapter<Session> {
     private Context context;
@@ -33,15 +36,18 @@ public class EventAdapter extends ArrayAdapter<Session> {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View viewToDisplay = LayoutInflater.from(this.getContext()).inflate(R.layout.list_sessions, parent, false);
-        initComponent(viewToDisplay);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.schedule_item, parent, false);
+        }
+
+        initComponent(convertView);
 
         Session session = getItem(position);
 
         if (session != null)
             setUIElements(session);
 
-        return viewToDisplay;
+        return convertView;
     }
 
     private void initComponent(View convertView) {

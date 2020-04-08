@@ -2,7 +2,9 @@ package com.ui.fitit.ui;
 
 import android.os.Bundle;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.ui.fitit.R;
 
 public class UserProfileActivity extends AppCompatActivity {
