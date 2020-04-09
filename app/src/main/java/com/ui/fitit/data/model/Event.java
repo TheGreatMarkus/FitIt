@@ -11,11 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Event {
+    private String name;
+    private String description;
     private LocalTime start;
     private LocalTime end;
     private LocalDate startDate;
-    private String description;
-    private String name;
     private String location;
-    //private Frequency frequency;
 }
