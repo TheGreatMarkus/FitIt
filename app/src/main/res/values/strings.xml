@@ -15,6 +15,10 @@
     <string name="event_name">Enter event name</string>
     <string name="event_description">Describe event</string>
     <string name="event_location">Where is the event happening?</string>
+    <string name="event_startTime">Start time:</string>
+    <string name="event_duration">Duration:</string>
+    <string name="colon">:</string>
+    <string name="minute_abrv">min</string>
     <string name="create_event">Create Event</string>
     <string name="frequency">Frequency</string>
 

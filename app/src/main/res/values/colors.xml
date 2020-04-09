@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#a30000</color>
     <color name="colorPrimaryLight">#ff6434</color>
     <color name="colorAccent">#81c784</color>
+    <color name="error">#FF0000</color>
+    <color name="default_outline">#000000</color>
 </resources>

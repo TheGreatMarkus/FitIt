@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@NoArgsConstructor
 @Getter
 public class Event {
     private String name;
@@ -19,6 +18,5 @@ public class Event {
     private LocalTime start;
     private LocalTime end;
     private LocalDate startDate;
-    private List<Session> sessionList;
     private String location;
 }
