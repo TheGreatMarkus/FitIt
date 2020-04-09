@@ -1,14 +1,17 @@
 package com.ui.fitit.ui;
 
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
 import com.ui.fitit.data.model.Event;
@@ -21,15 +24,26 @@ import java.util.List;
 
 public class ScheduleActivity extends AppCompatActivity {
 
-    List<Session> sessions;
-    EventAdapter adapter;
-    ListView allSessions;
+    private static String TAG = "ScheduleActivity";
+
+    private SharedPreferences spLogin;
+
+    private List<Session> sessions;
+    private EventAdapter adapter;
+    private ListView allSessions;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.schedule_activity);
+
+        spLogin = getSharedPreferences(Constants.SP_LOGIN, MODE_PRIVATE);
+        if (spLogin.getBoolean(Constants.SP_LOGIN_LOGGED_IN, false)) {
+            String username = spLogin.getString(Constants.SP_LOGIN_USERNAME, Constants.SP_LOGIN_NO_USER);
+            Toast.makeText(this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
+        }
+
         initListOfSessions(); // TODO: remove, just for testing purposes
         allSessions = findViewById(R.id.all_sessions);
         setEventsAdapter();
@@ -54,7 +68,6 @@ public class ScheduleActivity extends AppCompatActivity {
     }
 
     private void setEventsAdapter() {
-
         // Android adapter for list view
         adapter = new EventAdapter(this, R.layout.schedule_item, sessions);
         allSessions.setAdapter(adapter);
