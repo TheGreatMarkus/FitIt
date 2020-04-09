@@ -56,39 +56,30 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void onConfirm(View view) {
-        final String usernameText = this.usernameEditText.getText().toString();
-        final String passwordText = this.passwordEditText.getText().toString();
-        this.passwordEditText.setText("");
-        final String fullNameText = this.fullNameEditText.getText().toString();
-        if (!validateForm(usernameText, passwordText)) {
+        final String username = this.usernameEditText.getText().toString();
+        final String password = this.passwordEditText.getText().toString();
+
+        final String fullName = this.fullNameEditText.getText().toString();
+        if (!validateForm(username, password)) {
             return;
         }
 
-        users.document(usernameText).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        users.document(username).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()) {
                     User existingUser = documentSnapshot.toObject(User.class);
-                    if (login && existingUser != null
-                            && existingUser.getHashedPassword() != null
-                            && existingUser.getHashedPassword().equals(hashPassword(passwordText))) {
-                        // TODO Redirect to landing page when login successful
-                        Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + usernameText, Toast.LENGTH_SHORT).show();
+                    if (login) {
+                        attemptLogin(existingUser, username, password);
                     } else {
-                        Toast.makeText(LoginActivity.this, "Password incorrect: " + usernameText, Toast.LENGTH_SHORT).show();
+                        userAlreadyExists(username);
                     }
                 } else if (login) {
-                    usernameEditText.setText("");
-                    Toast.makeText(LoginActivity.this, "Login failed: User doesn't exist: " + usernameText, Toast.LENGTH_SHORT).show();
+                    nonExistentUser(username);
                 } else {
-                    String hashedPassword = hashPassword(passwordText);
-
-                    User user = new User(usernameText, hashedPassword, fullNameText);
-                    users.document(user.getUsername()).set(user);
-                    // TODO Redirect to landing page when account creation successful
-                    Toast.makeText(LoginActivity.this, "User created successfully " + usernameText, Toast.LENGTH_SHORT).show();
-
+                    signUpNewUser(username, password, fullName);
                 }
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -98,9 +89,40 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    private void signUpNewUser(String username, String password, String fullName) {
+        String hashedPassword = hashPassword(password);
+
+        User user = new User(username, hashedPassword, fullName);
+        users.document(user.getUsername()).set(user);
+        // TODO Redirect to landing page when account creation successful
+        Toast.makeText(LoginActivity.this, "User created successfully: " + username, Toast.LENGTH_SHORT).show();
+    }
+
+    private void nonExistentUser(String username) {
+        usernameEditText.setText("");
+        Toast.makeText(LoginActivity.this, "Login failed: User doesn't exist: " + username, Toast.LENGTH_SHORT).show();
+    }
+
+    private void userAlreadyExists(String username) {
+        usernameEditText.setText("");
+        Toast.makeText(LoginActivity.this, "User " + username + " already exists!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void attemptLogin(User existingUser, String username, String password) {
+        if (existingUser != null
+                && existingUser.getHashedPassword() != null
+                && existingUser.getHashedPassword().equals(hashPassword(password))) {
+            // TODO Redirect to landing page when login successful
+            Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
+        } else {
+            passwordEditText.setText("");
+            Toast.makeText(LoginActivity.this, "Password incorrect: " + username, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private boolean validateForm(String usernameText, String passwordText) {
         if (usernameText.isEmpty()) {
-            Toast.makeText(this, "Please write your username in the field", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please write a username", Toast.LENGTH_SHORT).show();
             return false;
         }
         if (!usernameText.matches("^[a-zA-Z0-9-]*$")) {
@@ -108,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         }
         if (passwordText.length() < 8) {
-            Toast.makeText(this, "Please write your pass", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your password cannot be shorter than 8 characters", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
