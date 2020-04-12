@@ -71,9 +71,9 @@ public class EventAdapter extends ArrayAdapter<Session> {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void setUIElements(Session session) {
         name.setText(session.getEvent().getName());
-        time.setText(session.getEvent().getStart().toString() + " - " + session.getEvent().getEnd().toString());
+        time.setText(session.getEvent().getStart().toLocalTime().toString() + " - " + session.getEvent().getEnd().toLocalTime().toString());
         location.setText(session.getEvent().getLocation());
-        day.setText(String.valueOf(session.getDate().getDayOfMonth()));
+        day.setText(String.valueOf(session.getDate().getDay()));
         month.setText(session.getDate().getMonth().toString());
     }
 }

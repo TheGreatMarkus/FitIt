@@ -1,6 +1,8 @@
 package com.ui.fitit.ui.newevent;
 
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,8 +18,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.R;
+import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.Event;
+import com.ui.fitit.data.model.FitDate;
+import com.ui.fitit.data.model.FitTime;
 import com.ui.fitit.data.model.Frequency;
 
 import java.time.LocalDate;
@@ -31,6 +38,11 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     private static final String TIME_FORMAT = "hh:mm a";
 
 
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference users = db.collection("users/");
+    private CollectionReference events;
+    private SharedPreferences spLogin;
+
     EditText name;
     EditText description;
     EditText location;
@@ -43,7 +55,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     @Frequency
     String frequency;
 
-    private LocalTime startTime = null;
+    private LocalTime startTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +63,22 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         setContentView(R.layout.activity_new_event);
         initAllComponents();
 
+        setupPersistentStorage();
+
         startTime = LocalTime.now();
         eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(TIME_FORMAT)));
+    }
+
+    private void setupPersistentStorage() {
+        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
+        String username = SPUtilities.getLoggedInUserName(spLogin);
+        if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
+            events = users.document(username).collection("events");
+        } else {
+            Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
     }
 
     public void initAllComponents() {
@@ -63,6 +89,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         duration = findViewById(R.id.event_duration);
 
         createEventButton = findViewById(R.id.button);
+        createEventButton.setOnClickListener(this::onCreateEvent);
 
         frequencySpinner = findViewById(R.id.frequencyChoices);
         initSpinner();
@@ -93,9 +120,17 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
             LocalTime endTime = startTime.plusMinutes(eventDuration);
 
-            Event event = new Event(eventName, eventDescription, startTime, endTime, LocalDate.now(), eventLocation);
+            FitTime startFitTime = new FitTime(startTime);
+            FitTime endFitTime = new FitTime(endTime);
+            FitDate startFitDate = new FitDate(LocalDate.now());
+
+            Event event = new Event(eventName, eventDescription, startFitTime, endFitTime, startFitDate, eventLocation);
             Log.d(TAG, "onCreateEvent: New Event created: " + event);
             Toast.makeText(this, "Event Created successfully", Toast.LENGTH_SHORT).show();
+
+            events.document(event.getId()).set(event).addOnFailureListener(e -> {
+                Log.d(TAG, "onCreateEvent: Error occured while saving Event!", e);
+            });
             finish();
         }
     }

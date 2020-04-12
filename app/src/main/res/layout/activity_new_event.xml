@@ -147,7 +147,6 @@
                 android:layout_marginVertical="15dp"
                 android:background="@color/colorPrimary"
                 android:backgroundTint="@color/colorPrimary"
-                android:onClick="onCreateEvent"
                 android:scaleX="1"
                 android:scaleY="1"
                 android:text="@string/new_event_create"
