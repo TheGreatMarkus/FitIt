@@ -138,8 +138,8 @@ public class LoginActivity extends AppCompatActivity {
         users.document(username).get().addOnSuccessListener(documentSnapshot -> {
             User user = documentSnapshot.toObject(User.class);
             if (user != null && user.getUsername() != null) {
-                spLogin.edit().putString(Constants.SP_LOGIN_USERNAME, user.getUsername()).apply();
-                spLogin.edit().putBoolean(Constants.SP_LOGIN_LOGGED_IN, true).apply();
+                spLogin.edit().putString(Constants.SP_LOGIN_USERNAME, user.getUsername())
+                        .putBoolean(Constants.SP_LOGIN_LOGGED_IN, true).apply();
                 Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
@@ -162,12 +162,12 @@ public class LoginActivity extends AppCompatActivity {
         if (login) {
             fullNameEditText.setVisibility(View.GONE);
             confirmButton.setText(R.string.login_button_text);
-            switchButton.setText(R.string.switch_text_login);
+            switchButton.setText(R.string.login_switch_text);
 
         } else {
             fullNameEditText.setVisibility(View.VISIBLE);
             confirmButton.setText(R.string.sign_up_button_text);
-            switchButton.setText(R.string.switch_text_sign_up);
+            switchButton.setText(R.string.sign_up_switch_text);
         }
     }
 

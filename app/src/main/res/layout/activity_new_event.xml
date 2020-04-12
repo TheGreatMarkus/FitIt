@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="5dp"
                 android:autofillHints=""
-                android:hint="@string/event_name"
+                android:hint="@string/new_event_name"
                 android:inputType="textPersonName"
                 android:textSize="@dimen/new_event_font_size"
 
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="5dp"
                 android:autofillHints=""
-                android:hint="@string/event_description"
+                android:hint="@string/new_event_description"
                 android:inputType="textMultiLine"
                 android:textSize="@dimen/new_event_font_size" />
 
@@ -54,7 +54,7 @@
                     android:id="@+id/startTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/event_startTime"
+                    android:text="@string/new_event_start_time"
                     android:textSize="@dimen/new_event_font_size" />
 
             <TextView
@@ -83,7 +83,7 @@
                     android:id="@+id/duration"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/event_duration"
+                    android:text="@string/new_event_duration"
                     android:textSize="@dimen/new_event_font_size" />
 
             <EditText
@@ -102,7 +102,7 @@
                     android:id="@+id/min_abr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/minute_abrv"
+                    android:text="@string/new_event_duration_unit"
                     android:textAlignment="center"
                     android:textSize="@dimen/new_event_font_size" />
 
@@ -115,7 +115,7 @@
                 android:layout_marginVertical="5dp"
                 android:autofillHints=""
                 android:ems="10"
-                android:hint="@string/event_location"
+                android:hint="@string/new_event_location"
                 android:inputType="textPostalAddress"
                 android:textSize="@dimen/new_event_font_size" />
 
@@ -130,7 +130,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="@string/frequency"
+                    android:text="@string/new_event_frequency"
                     android:textSize="@dimen/new_event_font_size" />
 
             <Spinner
@@ -150,7 +150,7 @@
                 android:onClick="onCreateEvent"
                 android:scaleX="1"
                 android:scaleY="1"
-                android:text="@string/create_event"
+                android:text="@string/new_event_create"
                 android:textAlignment="center" />
 
     </LinearLayout>

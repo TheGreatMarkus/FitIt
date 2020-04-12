@@ -14,7 +14,7 @@
             android:theme="@style/AppTheme">
         <activity
                 android:name=".ui.LoginActivity"
-                android:label="@string/login_activity_label">
+                android:label="@string/login_title">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -27,6 +27,6 @@
 
         <activity
                 android:name=".ui.newevent.NewEventActivity"
-                android:label="@string/new_event_activity_label" />
+                android:label="@string/new_event_title" />
     </application>
 </manifest>
