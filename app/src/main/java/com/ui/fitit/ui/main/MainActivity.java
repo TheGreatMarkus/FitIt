@@ -17,6 +17,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.User;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private SharedPreferences spLogin;
 
     User user;
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection("users/");
 
@@ -36,6 +38,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.activity_main);
 
+        initViews(savedInstanceState);
+
+        fetchUserInformation();
+
+    }
+
+    private void fetchUserInformation() {
+        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
+        String username = SPUtilities.getLoggedInUserName(spLogin);
+
+        Intent i = getIntent();
+        user = (User) i.getSerializableExtra(Constants.INTENT_EXTRA_USER);
+
+        if (user != null && !user.getUsername().equals(username)
+                || username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
+            Toast.makeText(this, "Unexpected state. Going back to login screen.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void initViews(Bundle savedInstanceState) {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -54,20 +77,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     new ScheduleFragment()).commit();
             navigationView.setCheckedItem(R.id.nav_schedule);
         }
-
-        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
-        String username = SPUtilities.getLoggedInUserName(spLogin);
-        if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
-            users.document(username).get().addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    user = documentSnapshot.toObject(User.class);
-                }
-            });
-        } else {
-            Toast.makeText(this, "Unexpected state. You are not logged in. Going back to login screen.", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
     }
 
     @Override
