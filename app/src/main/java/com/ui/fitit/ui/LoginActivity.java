@@ -1,5 +1,7 @@
 package com.ui.fitit.ui;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -7,16 +9,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.data.model.User;
+import com.ui.fitit.ui.main.MainActivity;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -27,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection("users/");
+    private SharedPreferences spLogin;
 
     private EditText usernameEditText;
     private EditText passwordEditText;
@@ -46,6 +47,12 @@ public class LoginActivity extends AppCompatActivity {
         fullNameEditText = findViewById(R.id.login_full_name);
         confirmButton = findViewById(R.id.confirm_button);
         switchButton = findViewById(R.id.switch_button);
+
+        spLogin = getSharedPreferences(Constants.SP_LOGIN, MODE_PRIVATE);
+
+        if (spLogin.getBoolean(Constants.SP_LOGIN_LOGGED_IN, false)) {
+            loginUser(spLogin.getString(Constants.SP_LOGIN_USERNAME, Constants.SP_LOGIN_NO_USER));
+        }
     }
 
     @Override
@@ -64,29 +71,21 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        users.document(username).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()) {
-                    User existingUser = documentSnapshot.toObject(User.class);
-                    if (login) {
-                        attemptLogin(existingUser, username, password);
-                    } else {
-                        userAlreadyExists(username);
-                    }
-                } else if (login) {
-                    nonExistentUser(username);
+        users.document(username).get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                User existingUser = documentSnapshot.toObject(User.class);
+                if (login) {
+                    attemptLogin(existingUser, username, password);
                 } else {
-                    signUpNewUser(username, password, fullName);
+                    userAlreadyExists(username);
                 }
+            } else if (login) {
+                nonExistentUser(username);
+            } else {
+                signUpNewUser(username, password, fullName);
+            }
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "onFailure: Error fetching user document!");
-            }
-        });
+        }).addOnFailureListener(e -> Log.d(TAG, "onFailure: Error fetching user document!"));
     }
 
     private void signUpNewUser(String username, String password, String fullName) {
@@ -94,8 +93,8 @@ public class LoginActivity extends AppCompatActivity {
 
         User user = new User(username, hashedPassword, fullName);
         users.document(user.getUsername()).set(user);
-        // TODO Redirect to landing page when account creation successful
         Toast.makeText(LoginActivity.this, "User created successfully: " + username, Toast.LENGTH_SHORT).show();
+        loginUser(username);
     }
 
     private void nonExistentUser(String username) {
@@ -112,8 +111,7 @@ public class LoginActivity extends AppCompatActivity {
         if (existingUser != null
                 && existingUser.getHashedPassword() != null
                 && existingUser.getHashedPassword().equals(hashPassword(password))) {
-            // TODO Redirect to landing page when login successful
-            Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
+            loginUser(username);
         } else {
             passwordEditText.setText("");
             Toast.makeText(LoginActivity.this, "Password incorrect: " + username, Toast.LENGTH_SHORT).show();
@@ -134,6 +132,21 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    public void loginUser(final String username) {
+        users.document(username).get().addOnSuccessListener(documentSnapshot -> {
+            User user = documentSnapshot.toObject(User.class);
+            if (user != null && user.getUsername() != null) {
+                spLogin.edit().putString(Constants.SP_LOGIN_USERNAME, user.getUsername()).apply();
+                spLogin.edit().putBoolean(Constants.SP_LOGIN_LOGGED_IN, true).apply();
+                Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        }).addOnFailureListener(e ->
+                Toast.makeText(LoginActivity.this, "User doesn't exist: " + username, Toast.LENGTH_SHORT).show()
+        );
     }
 
 
