@@ -1,5 +1,6 @@
 package com.ui.fitit.ui;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
 import com.ui.fitit.data.model.Event;
 import com.ui.fitit.data.model.Session;
+import com.ui.fitit.ui.newevent.NewEventActivity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -78,4 +80,10 @@ public class ScheduleActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void addNewEvent(View view) {
+        Intent intent = new Intent(this, NewEventActivity.class);
+        startActivity(intent);
+    }
+
 }
