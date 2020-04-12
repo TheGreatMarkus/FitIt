@@ -1,17 +1,20 @@
-package com.ui.fitit.ui;
+package com.ui.fitit.ui.main;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
+import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
@@ -24,7 +27,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScheduleActivity extends AppCompatActivity {
+public class ScheduleFragment extends Fragment {
 
     private static String TAG = "ScheduleActivity";
 
@@ -33,26 +36,33 @@ public class ScheduleActivity extends AppCompatActivity {
     private List<Session> sessions;
     private EventAdapter adapter;
     private ListView allSessions;
+    private FloatingActionButton fabNewEvent;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.schedule_activity);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_schedule, container, false);
+        Context context = requireContext();
 
-        spLogin = getSharedPreferences(Constants.SP_LOGIN, MODE_PRIVATE);
-        if (spLogin.getBoolean(Constants.SP_LOGIN_LOGGED_IN, false)) {
-            String username = spLogin.getString(Constants.SP_LOGIN_USERNAME, Constants.SP_LOGIN_NO_USER);
-            Toast.makeText(this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
-        }
+        initEventData(context);
 
-        initListOfSessions(); // TODO: remove, just for testing purposes
-        allSessions = findViewById(R.id.all_sessions);
-        setEventsAdapter();
+        allSessions = view.findViewById(R.id.all_sessions);
+        fabNewEvent = view.findViewById(R.id.fab_new_event);
+
+
+        setEvents(context);
+        return view;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void initListOfSessions() {
+
+    private void initEventData(Context context) {
+        spLogin = context.getSharedPreferences(Constants.SP_LOGIN, Context.MODE_PRIVATE);
+        if (spLogin.getBoolean(Constants.SP_LOGIN_LOGGED_IN, false)) {
+            String username = spLogin.getString(Constants.SP_LOGIN_USERNAME, Constants.SP_LOGIN_NO_USER);
+            // TODO: use this to fetch proper data
+            Log.d(TAG, "initEventData: Username of logged in user: " + username);
+        }
+
         sessions = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
             Event event = new Event();
@@ -69,20 +79,19 @@ public class ScheduleActivity extends AppCompatActivity {
         }
     }
 
-    private void setEventsAdapter() {
+    private void setEvents(Context context) {
         // Android adapter for list view
-        adapter = new EventAdapter(this, R.layout.schedule_item, sessions);
+        adapter = new EventAdapter(context, R.layout.schedule_item, sessions);
         allSessions.setAdapter(adapter);
-        allSessions.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        allSessions.setOnItemClickListener((adapterView, view, i, l) -> {
 
-            }
         });
+
+        fabNewEvent.setOnClickListener(this::addNewEvent);
     }
 
-    public void addNewEvent(View view) {
-        Intent intent = new Intent(this, NewEventActivity.class);
+    private void addNewEvent(View view) {
+        Intent intent = new Intent(getActivity(), NewEventActivity.class);
         startActivity(intent);
     }
 

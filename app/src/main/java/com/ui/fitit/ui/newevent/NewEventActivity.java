@@ -24,7 +24,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-public class NewEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, TimePickerDialog.OnTimeSetListener {
+public class NewEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
+        TimePickerDialog.OnTimeSetListener {
+
     private static final String TAG = "NewEventActivity";
     private static final String TIME_FORMAT = "hh:mm a";
 
@@ -37,8 +39,10 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     EditText duration;
     Spinner frequencySpinner;
     Button createEventButton;
+
     @Frequency
     String frequency;
+
     private LocalTime startTime = null;
 
     @Override
@@ -109,6 +113,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         return true;
     }
 
+    // TODO we could style the components based on if they are invalid, but i don't think this is necessary
     private void resetComponentState(EditText component, boolean isValid) {
         if (isValid) {
             component.setTextColor(getColor(R.color.default_outline));

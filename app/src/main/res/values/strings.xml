@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">FitIt</string>
+    <string name="nav_drawer_open">Open Navigation Drawer</string>
+    <string name="nav_drawer_close">Close Navigation Drawer</string>
+
     <string name="profile_pic_desc">User Profile Picture</string>
 
     <string name="login_title_text">Welcome to FitIt!</string>
@@ -28,6 +31,8 @@
     <string name="login_activity_label">Login</string>
     <string name="new_event_activity_label">Create a New Event</string>
     <string name="group_activity_label">Group</string>
+    <string name="settings_activity_label">Settings</string>
+    <string name="nav_logout_label">Log Out</string>
 
     <string-array name="frequency_choices">
         <item>Daily</item>

@@ -32,13 +32,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title"
             app:layout_constraintVertical_bias="0.0"
-            tools:context=".ui.ScheduleActivity"
-            tools:showIn="@layout/schedule_activity">
+            tools:context=".ui.main.ScheduleFragment"
+            tools:showIn="@layout/fragment_schedule">
 
 
     </ListView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_new_event"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="false"
@@ -46,7 +47,6 @@
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
             android:background="@color/colorAccent"
-            android:onClick="addNewEvent"
             android:src="@drawable/ic_add_black"
             app:fabSize="normal"
             app:layout_constraintBottom_toBottomOf="parent"
