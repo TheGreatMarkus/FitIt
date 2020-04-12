@@ -6,13 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
 public class Session {
 
+
     private final String id = UUID.randomUUID().toString();
     private FitDate date;
     private Event event;
-    private boolean attended;
+    private Attendance attendance;
 }

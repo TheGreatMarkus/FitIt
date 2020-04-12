@@ -1,7 +1,6 @@
 package com.ui.fitit.adapters;
 
 import android.content.Context;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +8,6 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import com.ui.fitit.R;
 import com.ui.fitit.data.model.Session;
@@ -68,10 +66,9 @@ public class EventAdapter extends ArrayAdapter<Session> {
         return sessions.size();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void setUIElements(Session session) {
         name.setText(session.getEvent().getName());
-        time.setText(session.getEvent().getStart().toLocalTime().toString() + " - " + session.getEvent().getEnd().toLocalTime().toString());
+        time.setText(session.getEvent().getStartTime().toLocalTime().toString() + " - " + session.getEvent().getEndTime().toLocalTime().toString());
         location.setText(session.getEvent().getLocation());
         day.setText(String.valueOf(session.getDate().getDay()));
         month.setText(session.getDate().getMonth().toString());

@@ -52,8 +52,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     Spinner frequencySpinner;
     Button createEventButton;
 
-    @Frequency
-    String frequency;
+    Frequency frequency = Frequency.ONCE;
 
     private LocalTime startTime;
 
@@ -91,15 +90,14 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         createEventButton = findViewById(R.id.button);
         createEventButton.setOnClickListener(this::onCreateEvent);
 
-        frequencySpinner = findViewById(R.id.frequencyChoices);
+        frequencySpinner = findViewById(R.id.frequency_spinner);
         initSpinner();
 
 
     }
 
     public void initSpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.frequency_choices, android.R.layout.simple_spinner_item);
+        ArrayAdapter<Frequency> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Frequency.values());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         frequencySpinner.setAdapter(adapter);
         frequencySpinner.setOnItemSelectedListener(this);
@@ -124,7 +122,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
             FitTime endFitTime = new FitTime(endTime);
             FitDate startFitDate = new FitDate(LocalDate.now());
 
-            Event event = new Event(eventName, eventDescription, startFitTime, endFitTime, startFitDate, eventLocation);
+            Event event = new Event(eventName, eventDescription, eventLocation, startFitTime, endFitTime, startFitDate, frequency);
             Log.d(TAG, "onCreateEvent: New Event created: " + event);
             Toast.makeText(this, "Event Created successfully", Toast.LENGTH_SHORT).show();
 
@@ -140,8 +138,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
                 || name.getText().toString().isEmpty()
                 || description.getText().toString().isEmpty()
                 || duration.getText().toString().isEmpty()
-                || location.getText().toString().isEmpty()
-                || frequency.isEmpty()) {
+                || location.getText().toString().isEmpty()) {
             Toast.makeText(this, "Please don't leave any empty fields", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -159,12 +156,13 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        frequency = (String) parent.getItemAtPosition(position);
+        frequency = (Frequency) parent.getItemAtPosition(position);
+
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-        frequency = (String) parent.getItemAtPosition(0);
+        frequency = (Frequency) parent.getItemAtPosition(0);
     }
 
     public void showTimePickerDialog(View v) {

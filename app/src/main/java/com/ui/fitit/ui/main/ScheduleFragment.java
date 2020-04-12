@@ -19,6 +19,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
+import com.ui.fitit.data.model.Attendance;
 import com.ui.fitit.data.model.Event;
 import com.ui.fitit.data.model.FitDate;
 import com.ui.fitit.data.model.FitTime;
@@ -37,9 +38,9 @@ public class ScheduleFragment extends Fragment {
     private final CollectionReference users = db.collection("users/");
 
     private List<Event> events;
-    private List<Session> sessions;
+    private List<Session> sessions = new ArrayList<>();
 
-    private ListView allSessions;
+    private ListView sessionListView;
     private FloatingActionButton fabNewEvent;
     private EventAdapter adapter;
 
@@ -59,7 +60,7 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        allSessions = view.findViewById(R.id.all_sessions);
+        sessionListView = view.findViewById(R.id.all_sessions);
         fabNewEvent = view.findViewById(R.id.fab_new_event);
         fabNewEvent.setOnClickListener(this::addNewEvent);
     }
@@ -72,23 +73,27 @@ public class ScheduleFragment extends Fragment {
                 Toast.makeText(activity, "No event!", Toast.LENGTH_SHORT).show();
             }
             events = document.toObjects(Event.class);
+            eventsToSessionList(events);
+
             Log.d(TAG, "fetchScheduleData: Events fetched: " + events);
         });
 
+    }
+
+    private void eventsToSessionList(List<Event> events) {
         // TODO: FIT-15 transform event info and session info into list of sessions
         sessions = new ArrayList<>();
-
         for (int i = 0; i < 20; i++) {
             Event event = new Event();
             event.setDescription("This is a description");
             event.setName("At-home Workout");
             event.setLocation("Mi Casa");
-            event.setStart(new FitTime(7, 30));
-            event.setEnd(new FitTime(8, 30));
+            event.setStartTime(new FitTime(7, 30));
+            event.setEndTime(new FitTime(8, 30));
             Session session = new Session();
             session.setEvent(event);
             session.setDate(new FitDate(2020, Month.APRIL, 8));
-            session.setAttended(false);
+            session.setAttendance(Attendance.UPCOMING);
             sessions.add(session);
         }
     }
@@ -96,8 +101,8 @@ public class ScheduleFragment extends Fragment {
     private void setupListView(Context context) {
         // Android adapter for list view
         adapter = new EventAdapter(context, R.layout.schedule_item, sessions);
-        allSessions.setAdapter(adapter);
-        allSessions.setOnItemClickListener((adapterView, view, i, l) -> {
+        sessionListView.setAdapter(adapter);
+        sessionListView.setOnItemClickListener((adapterView, view, i, l) -> {
             // TODO: Show extra information on click
         });
 
