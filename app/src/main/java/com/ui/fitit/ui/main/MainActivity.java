@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -19,7 +20,6 @@ import com.ui.fitit.R;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawer;
-
     private SharedPreferences spLogin;
 
     @Override
@@ -41,8 +41,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                new ScheduleFragment()).commit();
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new ScheduleFragment()).commit();
+            navigationView.setCheckedItem(R.id.nav_schedule);
+        }
 
         spLogin = getSharedPreferences(Constants.SP_LOGIN, Context.MODE_PRIVATE);
 
@@ -61,9 +64,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_group:
                 // TODO implement group fragment
+                Toast.makeText(this, "Opening Group", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_settings:
                 // TODO implement settings fragment
+                Toast.makeText(this, "Opening Settings", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_logout:
                 logout();
@@ -76,13 +81,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void logout() {
-        if (spLogin.getBoolean(Constants.SP_LOGIN_LOGGED_IN, false)) {
-            String username = spLogin.getString(Constants.SP_LOGIN_USERNAME, Constants.SP_LOGIN_NO_USER);
-            if (!username.equals(Constants.SP_LOGIN_NO_USER)) {
-                spLogin.edit().remove(Constants.SP_LOGIN_USERNAME).putBoolean(Constants.SP_LOGIN_LOGGED_IN, false).apply();
-                finish();
-            }
-        }
+        spLogin.edit().remove(Constants.SP_LOGIN_USERNAME).putBoolean(Constants.SP_LOGIN_LOGGED_IN, false).apply();
+        finish();
     }
 
     @Override
