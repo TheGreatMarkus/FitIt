@@ -13,8 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.ui.fitit.Constants;
 import com.ui.fitit.R;
+import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.User;
 import com.ui.fitit.ui.main.MainActivity;
 
@@ -48,10 +48,10 @@ public class LoginActivity extends AppCompatActivity {
         confirmButton = findViewById(R.id.confirm_button);
         switchButton = findViewById(R.id.switch_button);
 
-        spLogin = getSharedPreferences(Constants.SP_LOGIN, MODE_PRIVATE);
+        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, MODE_PRIVATE);
 
-        if (spLogin.getBoolean(Constants.SP_LOGIN_LOGGED_IN, false)) {
-            loginUser(spLogin.getString(Constants.SP_LOGIN_USERNAME, Constants.SP_LOGIN_NO_USER));
+        if (spLogin.getBoolean(SPUtilities.SP_LOGIN_LOGGED_IN, false)) {
+            loginUser(spLogin.getString(SPUtilities.SP_LOGIN_USERNAME, SPUtilities.SP_LOGIN_NO_USER));
         }
     }
 
@@ -138,8 +138,8 @@ public class LoginActivity extends AppCompatActivity {
         users.document(username).get().addOnSuccessListener(documentSnapshot -> {
             User user = documentSnapshot.toObject(User.class);
             if (user != null && user.getUsername() != null) {
-                spLogin.edit().putString(Constants.SP_LOGIN_USERNAME, user.getUsername())
-                        .putBoolean(Constants.SP_LOGIN_LOGGED_IN, true).apply();
+                spLogin.edit().putString(SPUtilities.SP_LOGIN_USERNAME, user.getUsername())
+                        .putBoolean(SPUtilities.SP_LOGIN_LOGGED_IN, true).apply();
                 Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);

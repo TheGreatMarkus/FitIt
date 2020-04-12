@@ -1,6 +1,7 @@
 package com.ui.fitit.ui.main;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -14,13 +15,20 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
-import com.ui.fitit.Constants;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.R;
+import com.ui.fitit.SPUtilities;
+import com.ui.fitit.data.model.User;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout drawer;
     private SharedPreferences spLogin;
+
+    User user;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference users = db.collection("users/");
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +55,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             navigationView.setCheckedItem(R.id.nav_schedule);
         }
 
-        spLogin = getSharedPreferences(Constants.SP_LOGIN, Context.MODE_PRIVATE);
+        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
+        String username = SPUtilities.getLoggedInUserName(spLogin);
+        if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
+            users.document(username).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    user = documentSnapshot.toObject(User.class);
+                }
+            });
+        } else {
+            Toast.makeText(this, "Unexpected state. You are not logged in. Going back to login screen.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
     }
 
@@ -81,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void logout() {
-        spLogin.edit().remove(Constants.SP_LOGIN_USERNAME).putBoolean(Constants.SP_LOGIN_LOGGED_IN, false).apply();
+        spLogin.edit().remove(SPUtilities.SP_LOGIN_USERNAME).putBoolean(SPUtilities.SP_LOGIN_LOGGED_IN, false).apply();
         finish();
     }
 
@@ -89,6 +108,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else {
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(startMain);
         }
     }
 

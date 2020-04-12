@@ -1,6 +1,6 @@
 package com.ui.fitit.data.model;
 
-import java.time.LocalDate;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Session {
-    private LocalDate date;
+
+    private final String id = UUID.randomUUID().toString();
+    private FitDate date;
     private Event event;
     private boolean attended;
 }
