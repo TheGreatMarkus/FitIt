@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.User;
@@ -142,6 +143,7 @@ public class LoginActivity extends AppCompatActivity {
                         .putBoolean(SPUtilities.SP_LOGIN_LOGGED_IN, true).apply();
                 Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra(Constants.INTENT_EXTRA_USER, user);
                 startActivity(intent);
             }
         }).addOnFailureListener(e ->

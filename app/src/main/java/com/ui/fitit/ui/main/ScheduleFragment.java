@@ -8,12 +8,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
 import com.ui.fitit.data.model.Event;
@@ -30,10 +33,15 @@ public class ScheduleFragment extends Fragment {
 
     private static String TAG = "ScheduleActivity";
 
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference users = db.collection("users/");
+
+    private List<Event> events;
     private List<Session> sessions;
-    private EventAdapter adapter;
+
     private ListView allSessions;
     private FloatingActionButton fabNewEvent;
+    private EventAdapter adapter;
 
     @Nullable
     @Override
@@ -41,21 +49,35 @@ public class ScheduleFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_schedule, container, false);
         Context context = requireContext();
         MainActivity activity = (MainActivity) requireActivity();
-        initEventData(activity);
 
-        allSessions = view.findViewById(R.id.all_sessions);
-        fabNewEvent = view.findViewById(R.id.fab_new_event);
+        fetchScheduleData(activity);
 
+        initViews(view);
 
-        setEvents(context);
+        setupListView(context);
         return view;
     }
 
+    private void initViews(View view) {
+        allSessions = view.findViewById(R.id.all_sessions);
+        fabNewEvent = view.findViewById(R.id.fab_new_event);
+        fabNewEvent.setOnClickListener(this::addNewEvent);
+    }
 
-    private void initEventData(MainActivity activity) {
+
+    private void fetchScheduleData(MainActivity activity) {
         Log.d(TAG, "initEventData: Username of logged in user: " + activity.user);
+        users.document(activity.user.getUsername()).collection("events").get().addOnSuccessListener(document -> {
+            if (document.isEmpty()) {
+                Toast.makeText(activity, "No event!", Toast.LENGTH_SHORT).show();
+            }
+            events = document.toObjects(Event.class);
+            Log.d(TAG, "fetchScheduleData: Events fetched: " + events);
+        });
 
+        // TODO: FIT-15 transform event info and session info into list of sessions
         sessions = new ArrayList<>();
+
         for (int i = 0; i < 20; i++) {
             Event event = new Event();
             event.setDescription("This is a description");
@@ -71,15 +93,14 @@ public class ScheduleFragment extends Fragment {
         }
     }
 
-    private void setEvents(Context context) {
+    private void setupListView(Context context) {
         // Android adapter for list view
         adapter = new EventAdapter(context, R.layout.schedule_item, sessions);
         allSessions.setAdapter(adapter);
         allSessions.setOnItemClickListener((adapterView, view, i, l) -> {
-
+            // TODO: Show extra information on click
         });
 
-        fabNewEvent.setOnClickListener(this::addNewEvent);
     }
 
     private void addNewEvent(View view) {
