@@ -33,9 +33,9 @@ public class EventAdapter extends ArrayAdapter<Session> {
         this.context = context;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    @NonNull
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.schedule_item, parent, false);
         }

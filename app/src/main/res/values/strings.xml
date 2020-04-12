@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">FitIt</string>
+    <string name="nav_drawer_open">Open Navigation Drawer</string>
+    <string name="nav_drawer_close">Close Navigation Drawer</string>
+
     <string name="profile_pic_desc">User Profile Picture</string>
 
     <string name="login_title_text">Welcome to FitIt!</string>
@@ -11,16 +14,25 @@
     <string name="sign_up_button_text">Sign up</string>
     <string name="switch_text_login">Don\'t have an account? Sign up today!</string>
     <string name="switch_text_sign_up">Already have an account? Log in.</string>
+
     <string name="schedule_title_text">Here are your upcoming events!</string>
-    <string name="event_name">Enter event name</string>
-    <string name="event_description">Describe event</string>
-    <string name="event_location">Where is the event happening?</string>
+
+    <string name="event_name">Event Name</string>
+    <string name="event_description">Event Description</string>
+    <string name="event_location">Event Location</string>
     <string name="event_startTime">Start time:</string>
     <string name="event_duration">Duration:</string>
-    <string name="colon">:</string>
-    <string name="minute_abrv">min</string>
+    <string name="minute_abrv">minutes</string>
     <string name="create_event">Create Event</string>
     <string name="frequency">Frequency</string>
+
+    <string name="user_profile_activity_label">User Profile</string>
+    <string name="schedule_activity_label">Schedule</string>
+    <string name="login_activity_label">Login</string>
+    <string name="new_event_activity_label">Create a New Event</string>
+    <string name="group_activity_label">Group</string>
+    <string name="settings_activity_label">Settings</string>
+    <string name="nav_logout_label">Log Out</string>
 
     <string-array name="frequency_choices">
         <item>Daily</item>

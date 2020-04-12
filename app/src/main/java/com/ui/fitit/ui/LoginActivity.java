@@ -9,17 +9,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.data.model.User;
+import com.ui.fitit.ui.main.MainActivity;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -74,29 +71,21 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        users.document(username).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()) {
-                    User existingUser = documentSnapshot.toObject(User.class);
-                    if (login) {
-                        attemptLogin(existingUser, username, password);
-                    } else {
-                        userAlreadyExists(username);
-                    }
-                } else if (login) {
-                    nonExistentUser(username);
+        users.document(username).get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                User existingUser = documentSnapshot.toObject(User.class);
+                if (login) {
+                    attemptLogin(existingUser, username, password);
                 } else {
-                    signUpNewUser(username, password, fullName);
+                    userAlreadyExists(username);
                 }
+            } else if (login) {
+                nonExistentUser(username);
+            } else {
+                signUpNewUser(username, password, fullName);
+            }
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "onFailure: Error fetching user document!");
-            }
-        });
+        }).addOnFailureListener(e -> Log.d(TAG, "onFailure: Error fetching user document!"));
     }
 
     private void signUpNewUser(String username, String password, String fullName) {
@@ -146,25 +135,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void loginUser(final String username) {
-        users.document(username).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                User user = documentSnapshot.toObject(User.class);
-                if (user != null && user.getUsername() != null) {
-                    spLogin.edit().putString(Constants.SP_LOGIN_USERNAME, user.getUsername()).apply();
-                    spLogin.edit().putBoolean(Constants.SP_LOGIN_LOGGED_IN, true).apply();
-                    Intent intent = new Intent(LoginActivity.this, ScheduleActivity.class);
-                    startActivity(intent);
-                }
+        users.document(username).get().addOnSuccessListener(documentSnapshot -> {
+            User user = documentSnapshot.toObject(User.class);
+            if (user != null && user.getUsername() != null) {
+                spLogin.edit().putString(Constants.SP_LOGIN_USERNAME, user.getUsername()).apply();
+                spLogin.edit().putBoolean(Constants.SP_LOGIN_LOGGED_IN, true).apply();
+                Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(LoginActivity.this, "User doesn't exist: " + username, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
+        }).addOnFailureListener(e ->
+                Toast.makeText(LoginActivity.this, "User doesn't exist: " + username, Toast.LENGTH_SHORT).show()
+        );
     }
 
 
