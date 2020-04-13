@@ -140,8 +140,7 @@ public class ScheduleFragment extends Fragment {
                 }
             });
         });
-
-
+        updateShownSchedule();
     }
 
     private void updateShownSchedule() {
