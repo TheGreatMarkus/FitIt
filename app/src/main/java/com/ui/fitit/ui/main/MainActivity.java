@@ -21,6 +21,7 @@ import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.User;
+import com.ui.fitit.ui.FeedbackActivity;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -100,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_logout:
                 logout();
+                break;
+            case R.id.nav_feedback:
+                startActivity(new Intent(MainActivity.this, FeedbackActivity.class));
                 break;
         }
         if (drawer.isDrawerOpen(GravityCompat.START)) {
