@@ -35,6 +35,9 @@ public class GroupFragment extends Fragment {
     private ConstraintLayout existingGroupPage;
     private AutoCompleteTextView groupNameSearchText;
     private ArrayAdapter<String> groupArrayAdapter;
+    private ArrayAdapter<String> userAdapter;
+    private ArrayAdapter<String> messageAdapter;
+
     private TextView groupNameView;
     private ListView listView;
 
@@ -93,14 +96,11 @@ public class GroupFragment extends Fragment {
         });
 
         seeUsersButton.setOnClickListener(v -> {
-            ArrayAdapter<String> userAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, group.getUsers());
             listView.setAdapter(userAdapter);
         });
 
         seeMessagesButton.setOnClickListener(v -> {
-            List<String> messages = new ArrayList<>(group.getMessages().values());
-            ArrayAdapter<String> userAdapter = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, messages);
-            listView.setAdapter(userAdapter);
+            listView.setAdapter(messageAdapter);
         });
 
     }
@@ -119,12 +119,9 @@ public class GroupFragment extends Fragment {
     }
 
     private void joinGroup(String groupName) {
-        group = groups.stream().filter(g -> g.getName().equals(groupName)).findFirst().orElseGet(() -> {
-            Group newGroup = new Group(groupName);
-            newGroup.addUser(user.getUsername());
-            return newGroup;
-        });
-
+        group = groups.stream().filter(g -> g.getName().equals(groupName)).findFirst()
+                .orElseGet(() -> new Group(groupName));
+        group.addUser(user.getUsername());
         groupCollection.document(group.getId()).set(group);
     }
 
@@ -151,6 +148,11 @@ public class GroupFragment extends Fragment {
             noGroupView.setVisibility(View.GONE);
             existingGroupPage.setVisibility(View.VISIBLE);
             groupNameView.setText(group.getName());
+
+            List<String> messages = new ArrayList<>(group.getMessages().values());
+            messageAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, messages);
+            userAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, group.getUsers());
+            listView.setAdapter(userAdapter);
         } else {
             Log.wtf(TAG, String.format("User %s is part of multiple groups.", user.getUsername()));
         }
