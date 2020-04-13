@@ -70,7 +70,7 @@ public class ScheduleFragment extends Fragment {
         sessionCollection = db.collection(Constants.USERS_COLLECTION)
                 .document(activity.user.getUsername()).collection(Constants.SESSION_COLLECTION);
 
-        sessionCollection.addSnapshotListener((d, e) -> updateScheduleData());
+        sessionCollection.addSnapshotListener(activity, (d, e) -> updateScheduleData());
 
         setupListView(activity);
 
@@ -167,6 +167,8 @@ public class ScheduleFragment extends Fragment {
             session.setAttendance(newAttendance);
             sessionCollection.document(session.getId()).set(session);
 
+            activity.user.updatePoints(session, event, activity.users);
+
             // Create new session as needed
             if (event.getFrequency() == Frequency.DAILY) {
                 FitDate newDate = new FitDate(session.getDate().toLocalDate().plusDays(1));
@@ -179,6 +181,7 @@ public class ScheduleFragment extends Fragment {
             }
         }
     }
+
 
     private void setupListView(MainActivity activity) {
         // Android adapter for list view
