@@ -8,6 +8,7 @@ public class Constants {
 
     public static String USERS_COLLECTION = "users";
     public static String EVENTS_COLLECTION = "events";
+    public static String FEEDBACKS_COLLECTION = "feedbacks";
 
     private Constants() {
     }

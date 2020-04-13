@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.Feedback;
@@ -41,7 +42,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection("users/");
+    private final CollectionReference users = db.collection(Constants.EVENTS_COLLECTION);
     private CollectionReference feedbacks;
     private SharedPreferences spLogin;
 
@@ -79,7 +80,7 @@ public class FeedbackActivity extends AppCompatActivity {
         spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
         if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
-            feedbacks = users.document(username).collection("feedbacks");
+            feedbacks = users.document(username).collection(Constants.FEEDBACKS_COLLECTION);
         } else {
             Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
             finish();
