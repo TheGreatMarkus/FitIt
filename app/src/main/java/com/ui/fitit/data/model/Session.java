@@ -15,6 +15,6 @@ public class Session {
 
     private final String id = UUID.randomUUID().toString();
     private FitDate date;
-    private Event event;
+    private String eventId;
     private Attendance attendance;
 }

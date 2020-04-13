@@ -20,12 +20,15 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.SPUtilities;
+import com.ui.fitit.data.model.Attendance;
 import com.ui.fitit.data.model.Event;
 import com.ui.fitit.data.model.FitDate;
 import com.ui.fitit.data.model.FitTime;
 import com.ui.fitit.data.model.Frequency;
+import com.ui.fitit.data.model.Session;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -39,8 +42,9 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection("users/");
-    private CollectionReference events;
+    private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
+    private CollectionReference eventCollection;
+    private CollectionReference sessionCollection;
     private SharedPreferences spLogin;
 
     EditText name;
@@ -72,7 +76,8 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
         if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
-            events = users.document(username).collection("events");
+            eventCollection = users.document(username).collection(Constants.EVENTS_COLLECTION);
+            sessionCollection = users.document(username).collection(Constants.SESSION_COLLECTION);
         } else {
             Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
             finish();
@@ -83,7 +88,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     public void initAllComponents() {
         name = findViewById(R.id.name);
         description = findViewById(R.id.description);
-        location = findViewById(R.id.location);
+        location = findViewById(R.id.item_location);
         eventTime = findViewById(R.id.event_time);
         duration = findViewById(R.id.event_duration);
 
@@ -123,12 +128,19 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
             FitDate startFitDate = new FitDate(LocalDate.now());
 
             Event event = new Event(eventName, eventDescription, eventLocation, startFitTime, endFitTime, startFitDate, frequency);
+            Session session = new Session(startFitDate, event.getId(), Attendance.UPCOMING);
             Log.d(TAG, "onCreateEvent: New Event created: " + event);
+            Log.d(TAG, "onCreateEvent: New Session created: " + session);
             Toast.makeText(this, "Event Created successfully", Toast.LENGTH_SHORT).show();
 
-            events.document(event.getId()).set(event).addOnFailureListener(e -> {
-                Log.d(TAG, "onCreateEvent: Error occured while saving Event!", e);
+            eventCollection.document(event.getId()).set(event).addOnFailureListener(e -> {
+                Log.d(TAG, "onCreateEvent: Error occurred while saving Event!", e);
             });
+
+            sessionCollection.document(session.getId()).set(session).addOnFailureListener(e -> {
+                Log.d(TAG, "onCreateEvent: Error occurred while saving session!", e);
+            });
+
             finish();
         }
     }

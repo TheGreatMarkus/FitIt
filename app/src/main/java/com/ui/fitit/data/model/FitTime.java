@@ -21,4 +21,8 @@ public class FitTime {
     public LocalTime toLocalTime() {
         return LocalTime.of(hour, minute);
     }
+
+    public int compareTo(FitTime o) {
+        return this.toLocalTime().compareTo(o.toLocalTime());
+    }
 }

@@ -27,7 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection("users/");
+    private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
     private SharedPreferences spLogin;
 
     private EditText usernameEditText;

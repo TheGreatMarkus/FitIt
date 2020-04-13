@@ -3,7 +3,7 @@ package com.ui.fitit.data.model;
 import androidx.annotation.NonNull;
 
 public enum Attendance {
-    ATTENDED("Attended"),
+    COMPLETED("Completed"),
     MISSED("Missed"),
     UPCOMING("Upcoming");
 
