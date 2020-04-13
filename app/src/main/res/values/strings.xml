@@ -11,6 +11,7 @@
     <string name="group_title">Group</string>
     <string name="settings_title">Settings</string>
     <string name="logout_title">Log Out</string>
+    <string name="feedback_title">Feedback</string>
 
     <!--  User Profile Activity  -->
     <string name="profile_picture_desc">User Profile Picture</string>
@@ -51,4 +52,17 @@
         <item>Weekly</item>
         <item>Every Weekday</item>
     </string-array>
+
+    <string name="submit_button">Submit feedback</string>
+    <string name="feedback_q1">How motivated were you for today\'s session?</string>
+    <string name="feedback_q2">What percentage of your daily goal did you complete?</string>
+    <string name="feedback_q3">How are you feeling after this session?</string>
+    <string name="m1_text">None</string>
+    <string name="m1">1</string>
+    <string name="m2">2</string>
+    <string name="m3">3</string>
+    <string name="m4">4</string>
+    <string name="m5">5</string>
+    <string name="m5_text">Very</string>
+
 </resources>
