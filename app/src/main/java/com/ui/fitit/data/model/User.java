@@ -34,8 +34,8 @@ public class User implements Serializable {
         return (float) (points % Constants.POINTS_PER_LEVEL) / (float) Constants.POINTS_PER_LEVEL * 100;
     }
 
-    public void updatePoints(Session session, Event event, CollectionReference users) {
-        if (session.getAttendance() == Attendance.COMPLETED) {
+    public void updatePoints(Attendance newAttendance, Event event, CollectionReference users) {
+        if (newAttendance == Attendance.COMPLETED) {
             updatePoints(10L);
             users.document(username).set(this);
         }

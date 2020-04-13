@@ -174,7 +174,7 @@ public class ScheduleFragment extends Fragment {
         // Set current session as completed
         if (session.getAttendance() == Attendance.UPCOMING) {
             WriteBatch batch = db.batch();
-            activity.user.updatePoints(session, event, activity.users);
+            activity.user.updatePoints(newAttendance, event, activity.users);
 
             session.setAttendance(newAttendance);
             batch.set(sessionCollection.document(session.getId()), session);
