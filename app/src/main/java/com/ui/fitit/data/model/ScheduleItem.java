@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ScheduleItem {
-    private String eventId;
-    private String sessionId;
+    private Event event;
+    private Session session;
     private String name;
     private String location;
     private Attendance attendance;
@@ -23,8 +23,8 @@ public class ScheduleItem {
     private LocalTime endTime;
 
     public ScheduleItem(Event event, Session session) {
-        this.eventId = event.id;
-        this.sessionId = session.id;
+        this.event = event;
+        this.session = session;
         this.name = event.name;
         this.location = event.location;
         this.attendance = session.attendance;

@@ -37,7 +37,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class ScheduleFragment extends Fragment {
@@ -121,7 +120,6 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void verifySchedule() {
-        AtomicBoolean updated = new AtomicBoolean(false);
         scheduleMap.asMap().forEach((event, eventSessions) -> {
             eventSessions.forEach(session -> {
                 LocalDateTime currentDT = LocalDateTime.now();
@@ -131,29 +129,24 @@ public class ScheduleFragment extends Fragment {
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                     builder.setPositiveButton("Completed", (dialog, which) -> {
-                        session.setAttendance(Attendance.COMPLETED);
-                        sessionCollection.document(session.getId()).set(session);
-                        updated.set(true);
+                        onSessionAttended(event, session, Attendance.COMPLETED);
+                        updateShownSchedule();
                     }).setNegativeButton("Missed", (dialog, which) -> {
-                        session.setAttendance(Attendance.MISSED);
-                        sessionCollection.document(session.getId()).set(session);
-                        updated.set(true);
+                        onSessionAttended(event, session, Attendance.MISSED);
+                        updateShownSchedule();
                     }).setTitle("A workout has passed!")
                             .setMessage("Found an upcoming workout that passed. " +
                                     "Did you complete it?" + itemDT.toString()).show();
                 }
             });
         });
-        if (!updated.get()) {
-            updateShownSchedule();
-        }
+
+
     }
 
     private void updateShownSchedule() {
         scheduleItems = new ArrayList<>();
-
         scheduleMap.asMap().forEach((event, eventSessions) -> {
-
             if (mode == ScheduleMode.FUTURE) {
                 eventSessions.stream()
                         .filter(session -> session.getAttendance() == Attendance.UPCOMING)
@@ -169,13 +162,10 @@ public class ScheduleFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
-    public void onSessionComplete(ScheduleItem item) {
-        Session session = sessions.stream().filter(temp -> item.getSessionId().equals(temp.getId())).findFirst().get();
-        Event event = events.stream().filter(temp -> item.getEventId().equals(temp.getId())).findFirst().get();
-
+    public void onSessionAttended(Event event, Session session, Attendance newAttendance) {
         // Set current session as completed
-        if (session.getAttendance() != Attendance.COMPLETED) {
-            session.setAttendance(Attendance.COMPLETED);
+        if (session.getAttendance() == Attendance.UPCOMING) {
+            session.setAttendance(newAttendance);
             sessionCollection.document(session.getId()).set(session);
 
             // Create new session as needed

@@ -52,6 +52,7 @@ public class EventAdapter extends ArrayAdapter<ScheduleItem> {
 
         // Set element values
         itemTitle.setText(item.getName());
+        // itemTitle.setText(String.format("%s - %s - %s", item.getName(), item.getFrequency(), item.getAttendance()));
         itemTime.setText(String.format("%s - %s",
                 item.getStartTime().toString(),
                 item.getEndTime().toString()));
@@ -68,7 +69,7 @@ public class EventAdapter extends ArrayAdapter<ScheduleItem> {
         itemCompleteCheckbox.setChecked(false);
         itemCompleteCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                scheduleFragment.onSessionComplete(item);
+                scheduleFragment.onSessionAttended(item.getEvent(), item.getSession(), Attendance.COMPLETED);
             }
         });
     }
