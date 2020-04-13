@@ -30,7 +30,8 @@
     <string name="sign_up_switch_text">Already have an account? Log in.</string>
 
     <!--  Schedule Fragment  -->
-    <string name="schedule_title_text">Here are your upcoming events!</string>
+    <string name="schedule_future_button">Future Sessions</string>
+    <string name="schedule_past_button">Past Sessions</string>
 
     <!--  New Event Activity  -->
     <string name="new_event_name">Event Name</string>
@@ -41,6 +42,7 @@
     <string name="new_event_duration_unit">minutes</string>
     <string name="new_event_create">Create Event</string>
     <string name="new_event_frequency">Frequency</string>
+
 
     <!--  Misc  -->
 

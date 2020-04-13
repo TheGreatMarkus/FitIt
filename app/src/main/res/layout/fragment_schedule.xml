@@ -5,20 +5,45 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <TextView
-            android:id="@+id/title"
+    <LinearLayout
+            android:id="@+id/schedule_header"
+            style="?android:attr/buttonBarStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center|center_horizontal"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:padding="10dp"
-            android:text="@string/schedule_title_text"
-            android:textSize="20sp"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+                android:id="@+id/schedule_future_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_weight="1"
+                android:background="@color/colorAccentDark"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/schedule_future_button"
+                android:textColor="@color/white" />
+
+        <Button
+                android:id="@+id/schedule_past_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@color/colorAccentDark"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/schedule_past_button"
+                android:textColor="@color/white" />
+
+    </LinearLayout>
 
     <ListView
             android:id="@+id/all_sessions"
@@ -30,7 +55,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/title"
+            app:layout_constraintTop_toBottomOf="@+id/schedule_header"
             app:layout_constraintVertical_bias="0.0"
             tools:context=".ui.main.ScheduleFragment"
             tools:showIn="@layout/fragment_schedule">
@@ -48,12 +73,12 @@
             android:layout_marginBottom="20dp"
             android:backgroundTint="@color/colorAccent"
             android:src="@drawable/ic_add"
-            android:tint="@color/white"
+            android:tint="@color/black"
             app:borderWidth="0dp"
-            app:rippleColor="@color/colorAccent"
             app:fabSize="normal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:maxImageSize="40dp" />
+            app:maxImageSize="40dp"
+            app:rippleColor="@color/colorAccent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
 

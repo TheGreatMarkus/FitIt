@@ -38,7 +38,6 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         TimePickerDialog.OnTimeSetListener {
 
     private static final String TAG = "NewEventActivity";
-    private static final String TIME_FORMAT = "hh:mm a";
 
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -69,7 +68,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         setupPersistentStorage();
 
         startTime = LocalTime.now();
-        eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(TIME_FORMAT)));
+        eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
     }
 
     private void setupPersistentStorage() {
@@ -157,15 +156,6 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         return true;
     }
 
-    // TODO we could style the components based on if they are invalid, but i don't think this is necessary
-    private void resetComponentState(EditText component, boolean isValid) {
-        if (isValid) {
-            component.setTextColor(getColor(R.color.default_outline));
-        } else {
-            component.setTextColor(getColor(R.color.error));
-        }
-    }
-
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         frequency = (Frequency) parent.getItemAtPosition(position);
@@ -185,6 +175,6 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onTimeSet(TimePicker view, int hour, int minute) {
         startTime = LocalTime.of(hour, minute);
-        eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(TIME_FORMAT)));
+        eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
     }
 }
