@@ -24,7 +24,9 @@ public class Group {
     }
 
     public void addUser(String username) {
-        users.add(username);
+        if (!users.contains(username)) {
+            users.add(username);
+        }
     }
 
     public boolean hasUser(String username) {

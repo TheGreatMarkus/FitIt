@@ -119,7 +119,7 @@ public class GroupFragment extends Fragment {
     }
 
     private void joinGroup(String groupName) {
-        group = groups.stream().filter(g -> g.hasUser(user.getUsername())).findFirst().orElseGet(() -> {
+        group = groups.stream().filter(g -> g.getName().equals(groupName)).findFirst().orElseGet(() -> {
             Group newGroup = new Group(groupName);
             newGroup.addUser(user.getUsername());
             return newGroup;
