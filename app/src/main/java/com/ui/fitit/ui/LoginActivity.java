@@ -92,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
     private void signUpNewUser(String username, String password, String fullName) {
         String hashedPassword = hashPassword(password);
 
-        User user = new User(username, hashedPassword, fullName);
+        User user = new User(username, hashedPassword, fullName, 0L);
         users.document(user.getUsername()).set(user);
         Toast.makeText(LoginActivity.this, "User created successfully: " + username, Toast.LENGTH_SHORT).show();
         loginUser(username);

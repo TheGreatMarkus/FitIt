@@ -29,9 +29,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private SharedPreferences spLogin;
 
     User user;
-
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
+    final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,11 +51,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent i = getIntent();
         user = (User) i.getSerializableExtra(Constants.INTENT_EXTRA_USER);
 
-        if (user != null && !user.getUsername().equals(username)
-                || username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
-            Toast.makeText(this, "Unexpected state. Going back to login screen.", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        users.document(username).addSnapshotListener(this, (document, e) -> {
+            if (user == null || !user.getUsername().equals(username)
+                    || username.equals(SPUtilities.SP_LOGIN_NO_USER)
+                    || document == null || !document.exists()) {
+                Toast.makeText(this, "Unexpected state. Going back to login screen.", Toast.LENGTH_SHORT).show();
+                logout();
+            } else {
+                user = document.toObject(User.class);
+            }
+        });
     }
 
     private void initViews(Bundle savedInstanceState) {

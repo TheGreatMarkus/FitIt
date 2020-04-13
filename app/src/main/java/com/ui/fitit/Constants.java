@@ -10,6 +10,8 @@ public class Constants {
     public static String EVENTS_COLLECTION = "events";
     public static String FEEDBACK_COLLECTION = "feedback";
 
+    public static long POINTS_PER_LEVEL = 100;
+
     private Constants() {
     }
 
