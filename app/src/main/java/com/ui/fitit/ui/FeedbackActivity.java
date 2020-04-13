@@ -42,7 +42,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection(Constants.EVENTS_COLLECTION);
+    private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
     private CollectionReference feedback;
     private SharedPreferences spLogin;
 
@@ -60,7 +60,7 @@ public class FeedbackActivity extends AppCompatActivity {
         getWindow().setLayout((int) (width * 0.9), (int) (height * 0.5));
 
         init();
-        setupPersistanceStorage();
+        setupPersistentStorage();
     }
 
     private void init() {
@@ -76,7 +76,7 @@ public class FeedbackActivity extends AppCompatActivity {
         setupOnSubmitListener();
     }
 
-    private void setupPersistanceStorage(){
+    private void setupPersistentStorage() {
         spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
         if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
@@ -87,11 +87,11 @@ public class FeedbackActivity extends AppCompatActivity {
         }
     }
 
-    private void setIconAsSelected(int id){
+    private void setIconAsSelected(int id) {
         findViewById(id).getBackground().setTint(getColor(R.color.colorAccent));
     }
 
-    private void setIconAsUnselected(int id){
+    private void setIconAsUnselected(int id) {
         findViewById(id).getBackground().setTint(getColor(R.color.black));
     }
 
@@ -168,7 +168,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
     private void setupOnSubmitListener() {
         submitButton.setOnClickListener(v -> {
-            String userName =SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE));
+            String userName = SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE));
             Feedback newFeedback = new Feedback(userName, new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
             Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + newFeedback);
             Toast.makeText(this, "Feedback submitted successfully", Toast.LENGTH_SHORT).show();

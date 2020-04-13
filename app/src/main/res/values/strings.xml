@@ -43,6 +43,10 @@
     <string name="new_event_duration_unit">minutes</string>
     <string name="new_event_create">Create Event</string>
     <string name="new_event_frequency">Frequency</string>
+    <string name="no_group_header">You\'re not in a group!\n\nSearch for a group…\nor create a new one!</string>
+    <string name="search_group_hint">Write in a group name!</string>
+    <string name="join_group_button">Join!</string>
+    <string name="create_group_button">Create!</string>
 
 
     <!--  Misc  -->

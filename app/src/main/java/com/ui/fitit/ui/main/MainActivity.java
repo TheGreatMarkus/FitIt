@@ -96,8 +96,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new UserProfileFragment()).commit();
                 break;
             case R.id.nav_group:
-                // TODO implement group fragment
-                Toast.makeText(this, "Opening Group", Toast.LENGTH_SHORT).show();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new GroupFragment()).commit();
                 break;
             case R.id.nav_settings:
                 // TODO implement settings fragment
