@@ -71,10 +71,15 @@ public class ScheduleFragment extends Fragment {
                 .document(activity.user.getUsername()).collection(Constants.SESSION_COLLECTION);
 
         sessionCollection.addSnapshotListener(activity, (d, e) -> updateScheduleData());
-
         setupListView(activity);
 
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateScheduleData();
     }
 
     private void initViews(View view) {
