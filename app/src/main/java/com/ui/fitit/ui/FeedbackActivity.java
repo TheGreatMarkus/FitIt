@@ -43,7 +43,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection(Constants.EVENTS_COLLECTION);
-    private CollectionReference feedbacks;
+    private CollectionReference feedback;
     private SharedPreferences spLogin;
 
     @Override
@@ -80,7 +80,7 @@ public class FeedbackActivity extends AppCompatActivity {
         spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
         if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
-            feedbacks = users.document(username).collection(Constants.FEEDBACKS_COLLECTION);
+            feedback = users.document(username).collection(Constants.FEEDBACK_COLLECTION);
         } else {
             Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
             finish();
@@ -169,11 +169,11 @@ public class FeedbackActivity extends AppCompatActivity {
     private void setupOnSubmitListener() {
         submitButton.setOnClickListener(v -> {
             String userName =SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE));
-            Feedback feedback = new Feedback(userName, new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
-            Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + feedback);
+            Feedback newFeedback = new Feedback(userName, new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
+            Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + newFeedback);
             Toast.makeText(this, "Feedback submitted successfully", Toast.LENGTH_SHORT).show();
 
-            feedbacks.document(feedback.getId()).set(feedback).addOnFailureListener(e -> {
+            this.feedback.document(newFeedback.getId()).set(newFeedback).addOnFailureListener(e -> {
                 Log.d(TAG, "onSubmitFeedback: Error occured while submitting feedback!", e);
             });
             finish();
