@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Event {
-    private final String id = UUID.randomUUID().toString();
-    private String name;
-    private String description;
-    private String location;
+    final String id = UUID.randomUUID().toString();
+    String name;
+    String description;
+    String location;
 
-    private FitTime startTime;
-    private FitTime endTime;
-    private FitDate startDate;
-    private Frequency frequency;
+    FitTime startTime;
+    FitTime endTime;
+    FitDate startDate;
+    Frequency frequency;
 }

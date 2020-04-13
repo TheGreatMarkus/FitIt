@@ -7,45 +7,24 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.data.model.Attendance;
-import com.ui.fitit.data.model.Event;
-import com.ui.fitit.data.model.FitDate;
-import com.ui.fitit.data.model.Frequency;
 import com.ui.fitit.data.model.ScheduleItem;
-import com.ui.fitit.data.model.Session;
-
-import java.util.List;
+import com.ui.fitit.ui.main.ScheduleFragment;
 
 public class EventAdapter extends ArrayAdapter<ScheduleItem> {
+
+    private ScheduleFragment scheduleFragment;
     private Context context;
-    private List<ScheduleItem> scheduleItems;
-    private String username;
-
-    // UI Elements
-    private TextView itemDay;
-    private TextView itemMonth;
-    private TextView itemTitle;
-    private TextView itemTime;
-    private TextView itemLocation;
-    private CheckBox itemCompleteCheckbox;
-
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private CollectionReference sessions;
 
 
-    public EventAdapter(@NonNull Context context, int textViewResourceId, @NonNull List<ScheduleItem> scheduleItems, String username) {
-        super(context, textViewResourceId, scheduleItems);
-        this.scheduleItems = scheduleItems;
+    public EventAdapter(@NonNull Context context, ScheduleFragment scheduleFragment, int textViewResourceId) {
+        super(context, textViewResourceId, scheduleFragment.scheduleItems);
+        this.scheduleFragment = scheduleFragment;
         this.context = context;
-        this.username = username;
     }
 
     @Override
@@ -55,68 +34,54 @@ public class EventAdapter extends ArrayAdapter<ScheduleItem> {
             convertView = LayoutInflater.from(context).inflate(R.layout.schedule_item, parent, false);
         }
         ScheduleItem item = getItem(position);
-        sessions = db.collection(Constants.USERS_COLLECTION).document(username).collection(Constants.SESSION_COLLECTION);
-
-        initComponent(convertView, item);
-
-
         if (item != null) {
-            setUIElements(item);
+            initComponent(convertView, item);
         }
+
         return convertView;
     }
 
     private void initComponent(View view, ScheduleItem item) {
-        itemTitle = view.findViewById(R.id.item_title);
-        itemTime = view.findViewById(R.id.item_time);
-        itemLocation = view.findViewById(R.id.item_location);
-        itemDay = view.findViewById(R.id.item_day);
-        itemMonth = view.findViewById(R.id.item_month);
-        itemCompleteCheckbox = view.findViewById(R.id.item_complete_checkbox);
+        // Find elements
+        TextView itemTitle = view.findViewById(R.id.item_title);
+        TextView itemTime = view.findViewById(R.id.item_time);
+        TextView itemLocation = view.findViewById(R.id.item_location);
+        // UI Elements
+        TextView itemDay = view.findViewById(R.id.item_day);
+        TextView itemMonth = view.findViewById(R.id.item_month);
+
+        // Set element values
+        itemTitle.setText(item.getName());
+        // itemTitle.setText(String.format("%s - %s - %s", item.getName(), item.getFrequency(), item.getAttendance()));
+        itemTime.setText(String.format("%s - %s",
+                item.getStartTime().toString(),
+                item.getEndTime().toString()));
+        itemLocation.setText(item.getLocation());
+        itemDay.setText(String.valueOf(item.getDate().getDayOfMonth()));
+        itemMonth.setText(item.getDate().getMonth().toString());
+
+        CheckBox itemCompleteCheckbox = view.findViewById(R.id.item_complete_checkbox);
+        if (item.getAttendance() != Attendance.UPCOMING) {
+            itemCompleteCheckbox.setVisibility(View.GONE);
+        } else {
+            itemCompleteCheckbox.setVisibility(View.VISIBLE);
+        }
         itemCompleteCheckbox.setChecked(false);
         itemCompleteCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                Toast.makeText(context, item.getEvent().getFrequency().toString(), Toast.LENGTH_SHORT).show();
-                Session session = item.getSession();
-                Event event = item.getEvent();
-
-                // Set current session as completed
-                item.getSession().setAttendance(Attendance.COMPLETED);
-                sessions.document(session.getId()).set(session);
-
-                // Create new session as needed
-                if (event.getFrequency() == Frequency.DAILY) {
-                    FitDate newDate = new FitDate(session.getDate().toLocalDate().plusDays(1));
-                    Session newSession = new Session(newDate, event.getId(), Attendance.UPCOMING);
-                    sessions.document(newSession.getId()).set(newSession);
-                    Toast.makeText(context, "NEW DAILY", Toast.LENGTH_SHORT).show();
-                } else if (event.getFrequency() == Frequency.WEEKLY) {
-                    FitDate newDate = new FitDate(session.getDate().toLocalDate().plusDays(7));
-                    Session newSession = new Session(newDate, event.getId(), Attendance.UPCOMING);
-                    sessions.document(newSession.getId()).set(newSession);
-                    Toast.makeText(context, "NEW WEEKLY", Toast.LENGTH_SHORT).show();
-                }
+                scheduleFragment.onSessionAttended(item.getEvent(), item.getSession(), Attendance.COMPLETED);
             }
         });
     }
 
     @Override
     public ScheduleItem getItem(int i) {
-        return scheduleItems.get(i);
+        return scheduleFragment.scheduleItems.get(i);
     }
 
     @Override
     public int getCount() {
-        return scheduleItems.size();
+        return scheduleFragment.scheduleItems.size();
     }
 
-    public void setUIElements(ScheduleItem scheduleItem) {
-        itemTitle.setText(scheduleItem.getEvent().getName());
-        itemTime.setText(String.format("%s - %s",
-                scheduleItem.getEvent().getStartTime().toLocalTime().toString(),
-                scheduleItem.getEvent().getEndTime().toLocalTime().toString()));
-        itemLocation.setText(scheduleItem.getEvent().getLocation());
-        itemDay.setText(String.valueOf(scheduleItem.getSession().getDate().getDay()));
-        itemMonth.setText(scheduleItem.getSession().getDate().getMonth().toString());
-    }
 }

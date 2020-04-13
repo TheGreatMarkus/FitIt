@@ -11,10 +11,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Session {
-
-
-    private final String id = UUID.randomUUID().toString();
-    private FitDate date;
-    private String eventId;
-    private Attendance attendance;
+    final String id = UUID.randomUUID().toString();
+    FitDate date;
+    String eventId;
+    Attendance attendance;
 }
