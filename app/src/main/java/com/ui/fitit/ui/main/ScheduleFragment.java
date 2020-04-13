@@ -3,6 +3,7 @@ package com.ui.fitit.ui.main;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
@@ -42,7 +44,7 @@ import java.util.stream.Collectors;
 public class ScheduleFragment extends Fragment {
 
     private static final String TAG = "ScheduleActivity";
-    public List<ScheduleItem> scheduleItems;
+    public List<ScheduleItem> scheduleItems = new ArrayList<>();
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference eventCollection;
@@ -63,14 +65,12 @@ public class ScheduleFragment extends Fragment {
         initViews(view);
 
         activity = (MainActivity) requireActivity();
-        scheduleItems = new ArrayList<>();
 
         eventCollection = db.collection(Constants.USERS_COLLECTION)
                 .document(activity.user.getUsername()).collection(Constants.EVENTS_COLLECTION);
         sessionCollection = db.collection(Constants.USERS_COLLECTION)
                 .document(activity.user.getUsername()).collection(Constants.SESSION_COLLECTION);
 
-        sessionCollection.addSnapshotListener(activity, (d, e) -> updateScheduleData());
         setupListView(activity);
 
         return view;
@@ -79,7 +79,7 @@ public class ScheduleFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        updateScheduleData();
+        sessionCollection.addSnapshotListener(activity, (d, e) -> updateScheduleData());
     }
 
     private void initViews(View view) {
@@ -104,6 +104,7 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void updateScheduleData() {
+        Log.d(TAG, "updateScheduleData Called");
         Task<QuerySnapshot> getEvents = eventCollection.get();
         Task<QuerySnapshot> getSessions = sessionCollection.get();
 
@@ -125,6 +126,7 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void verifySchedule() {
+        Log.d(TAG, "verifySchedule Called");
         scheduleMap.asMap().forEach((event, eventSessions) -> {
             eventSessions.forEach(session -> {
                 LocalDateTime currentDT = LocalDateTime.now();
@@ -149,6 +151,7 @@ public class ScheduleFragment extends Fragment {
     }
 
     private void updateShownSchedule() {
+        Log.d(TAG, "updateShownSchedule Called");
         scheduleItems = new ArrayList<>();
         scheduleMap.asMap().forEach((event, eventSessions) -> {
             if (mode == ScheduleMode.FUTURE) {
@@ -167,23 +170,24 @@ public class ScheduleFragment extends Fragment {
     }
 
     public void onSessionAttended(Event event, Session session, Attendance newAttendance) {
+        Log.d(TAG, "onSessionAttended Called");
         // Set current session as completed
         if (session.getAttendance() == Attendance.UPCOMING) {
-            session.setAttendance(newAttendance);
-            sessionCollection.document(session.getId()).set(session);
-
+            WriteBatch batch = db.batch();
             activity.user.updatePoints(session, event, activity.users);
 
+            session.setAttendance(newAttendance);
+            batch.set(sessionCollection.document(session.getId()), session);
+
             // Create new session as needed
-            if (event.getFrequency() == Frequency.DAILY) {
-                FitDate newDate = new FitDate(session.getDate().toLocalDate().plusDays(1));
+            if (event.getFrequency() != Frequency.ONCE) {
+                int daysTillNextSession = event.getFrequency().getDaysTillNext();
+                FitDate newDate = new FitDate(session.getDate().toLocalDate().plusDays(daysTillNextSession));
                 Session newSession = new Session(newDate, event.getId(), Attendance.UPCOMING);
-                sessionCollection.document(newSession.getId()).set(newSession);
-            } else if (event.getFrequency() == Frequency.WEEKLY) {
-                FitDate newDate = new FitDate(session.getDate().toLocalDate().plusDays(7));
-                Session newSession = new Session(newDate, event.getId(), Attendance.UPCOMING);
-                sessionCollection.document(newSession.getId()).set(newSession);
+                batch.set(sessionCollection.document(newSession.getId()), newSession);
             }
+
+            batch.commit();
         }
     }
 
