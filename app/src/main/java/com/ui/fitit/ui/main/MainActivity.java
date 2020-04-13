@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     User user;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection("users/");
+    private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

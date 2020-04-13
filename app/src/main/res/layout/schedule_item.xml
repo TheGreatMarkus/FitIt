@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/event"
+        android:id="@+id/schedule_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -11,26 +11,25 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:padding="5dp"
-            android:weightSum="4">
+            android:padding="8dp">
 
         <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+
+                android:layout_marginStart="4dp"
                 android:gravity="center_horizontal"
-                android:orientation="vertical"
-                android:paddingBottom="5dp">
+                android:orientation="vertical">
 
             <TextView
-                    android:id="@+id/day"
+                    android:id="@+id/item_day"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Day"
                     android:textSize="25sp" />
 
             <TextView
-                    android:id="@+id/month"
+                    android:id="@+id/item_month"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
@@ -38,47 +37,59 @@
         </LinearLayout>
 
         <LinearLayout
-                android:layout_width="192dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginStart="15dp"
                 android:layout_marginEnd="5dp"
-                android:layout_weight="2.9"
-                android:orientation="vertical">
+                android:layout_weight="2"
+                android:orientation="horizontal">
 
-            <TextView
-                    android:id="@+id/eventTitle"
+            <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:layout_marginBottom="3dp"
-                    android:text="Title of event"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:id="@+id/item_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:autoSizeTextType="uniform"
+                        android:text="Title of Event"
+                        android:textSize="18dp"
+                        android:textStyle="bold" />
+
+                <TextView
+                        android:id="@+id/item_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="startTime - endTime"
+                        android:textSize="16dp" />
+
+            </LinearLayout>
 
             <TextView
-                    android:id="@+id/location"
+                    android:id="@+id/item_location"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:layout_marginBottom="3dp"
-                    android:text="Location" />
-
-            <TextView
-                    android:id="@+id/time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:layout_marginBottom="3dp"
-                    android:text="startTime - endTime" />
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="0.8"
+                    android:gravity="center"
+                    android:text="Location"
+                    android:textSize="16dp" />
 
         </LinearLayout>
 
         <CheckBox
-                android:id="@+id/checkBox"
+                android:id="@+id/item_complete_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_weight="0.1" />
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:scaleX="1.3"
+                android:scaleY="1.3" />
 
     </LinearLayout>
 

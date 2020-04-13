@@ -3,43 +3,49 @@ package com.ui.fitit.ui.main;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.adapters.EventAdapter;
+import com.ui.fitit.data.model.Attendance;
 import com.ui.fitit.data.model.Event;
-import com.ui.fitit.data.model.FitDate;
-import com.ui.fitit.data.model.FitTime;
+import com.ui.fitit.data.model.ScheduleItem;
 import com.ui.fitit.data.model.Session;
 import com.ui.fitit.ui.newevent.NewEventActivity;
 
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ScheduleFragment extends Fragment {
 
     private static String TAG = "ScheduleActivity";
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference users = db.collection("users/");
+    private CollectionReference eventCollection;
+    private CollectionReference sessionCollection;
 
-    private List<Event> events;
-    private List<Session> sessions;
+    private ListMultimap<Event, Session> scheduleMap = ArrayListMultimap.create();
+    private List<ScheduleItem> scheduleItems;
 
-    private ListView allSessions;
+
+    private ListView sessionListView;
     private FloatingActionButton fabNewEvent;
     private EventAdapter adapter;
 
@@ -47,57 +53,69 @@ public class ScheduleFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_schedule, container, false);
-        Context context = requireContext();
-        MainActivity activity = (MainActivity) requireActivity();
-
-        fetchScheduleData(activity);
-
         initViews(view);
 
-        setupListView(context);
+        Context context = requireContext();
+        MainActivity activity = (MainActivity) requireActivity();
+        scheduleItems = new ArrayList<>();
+        String username = activity.user.getUsername();
+
+        setupListView(context, username);
+
+
+        eventCollection = db.collection(Constants.USERS_COLLECTION)
+                .document(username).collection(Constants.EVENTS_COLLECTION);
+
+        sessionCollection = db.collection(Constants.USERS_COLLECTION)
+                .document(username).collection(Constants.SESSION_COLLECTION);
+
+        sessionCollection.addSnapshotListener((d, e) -> updateScheduleData());
+
+
         return view;
     }
 
     private void initViews(View view) {
-        allSessions = view.findViewById(R.id.all_sessions);
+        sessionListView = view.findViewById(R.id.all_sessions);
         fabNewEvent = view.findViewById(R.id.fab_new_event);
         fabNewEvent.setOnClickListener(this::addNewEvent);
     }
 
 
-    private void fetchScheduleData(MainActivity activity) {
-        Log.d(TAG, "initEventData: Username of logged in user: " + activity.user);
-        users.document(activity.user.getUsername()).collection("events").get().addOnSuccessListener(document -> {
-            if (document.isEmpty()) {
-                Toast.makeText(activity, "No event!", Toast.LENGTH_SHORT).show();
-            }
-            events = document.toObjects(Event.class);
-            Log.d(TAG, "fetchScheduleData: Events fetched: " + events);
+    private void updateScheduleData() {
+        Task<QuerySnapshot> getEvents = eventCollection.get();
+        Task<QuerySnapshot> getSessions = sessionCollection.get();
+
+        Tasks.whenAllComplete(getEvents, getSessions).addOnCompleteListener(command -> {
+            scheduleMap = ArrayListMultimap.create();
+            scheduleItems.removeAll(scheduleItems);
+
+            List<Event> events = getEvents.getResult().toObjects(Event.class);
+            List<Session> sessions = getSessions.getResult().toObjects(Session.class);
+
+            events.forEach(event -> {
+                List<Session> eventSessions = sessions.stream()
+                        .filter(session -> session.getEventId().equals(event.getId()))
+                        .sorted((s1, s2) -> s2.getDate().compareTo(s1.getDate()))
+                        .collect(Collectors.toList());
+                scheduleMap.putAll(event, eventSessions);
+                ScheduleItem item = new ScheduleItem(event, eventSessions.get(0));
+                scheduleItems.add(item);
+            });
+            scheduleItems.removeIf(scheduleItem -> scheduleItem.getSession().getAttendance() != Attendance.UPCOMING);
+            scheduleItems.sort((o1, o2) -> o1.getEvent().getStartTime().compareTo(o2.getEvent().getStartTime()));
+            scheduleItems.sort((o1, o2) -> o1.getSession().getDate().compareTo(o2.getSession().getDate()));
+            adapter.notifyDataSetChanged();
         });
 
-        // TODO: FIT-15 transform event info and session info into list of sessions
-        sessions = new ArrayList<>();
-
-        for (int i = 0; i < 20; i++) {
-            Event event = new Event();
-            event.setDescription("This is a description");
-            event.setName("At-home Workout");
-            event.setLocation("Mi Casa");
-            event.setStart(new FitTime(7, 30));
-            event.setEnd(new FitTime(8, 30));
-            Session session = new Session();
-            session.setEvent(event);
-            session.setDate(new FitDate(2020, Month.APRIL, 8));
-            session.setAttended(false);
-            sessions.add(session);
-        }
     }
 
-    private void setupListView(Context context) {
+
+    private void setupListView(Context context, String username) {
         // Android adapter for list view
-        adapter = new EventAdapter(context, R.layout.schedule_item, sessions);
-        allSessions.setAdapter(adapter);
-        allSessions.setOnItemClickListener((adapterView, view, i, l) -> {
+        adapter = new EventAdapter(context, R.layout.schedule_item, scheduleItems, username);
+        sessionListView.setAdapter(adapter);
+        sessionListView.setOnItemClickListener((adapterView, view, i, l) -> {
             // TODO: Show extra information on click
         });
 

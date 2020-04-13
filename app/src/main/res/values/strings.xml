@@ -43,6 +43,7 @@
     <string name="new_event_frequency">Frequency</string>
 
     <!--  Misc  -->
+
     <string-array name="frequency_choices">
         <item>Daily</item>
         <item>Weekly</item>

@@ -22,8 +22,12 @@ public class FitDate {
         this.day = date.getDayOfMonth();
     }
 
-    LocalDate toLocalDate() {
+    public LocalDate toLocalDate() {
         return LocalDate.of(year, month, day);
+    }
+
+    public int compareTo(FitDate o) {
+        return this.toLocalDate().compareTo(o.toLocalDate());
     }
 
 

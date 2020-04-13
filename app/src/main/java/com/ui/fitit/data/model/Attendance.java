@@ -2,15 +2,14 @@ package com.ui.fitit.data.model;
 
 import androidx.annotation.NonNull;
 
-public enum Frequency {
-
-    ONCE("Once"),
-    DAILY("Daily"),
-    WEEKLY("Weekly");
+public enum Attendance {
+    COMPLETED("Completed"),
+    MISSED("Missed"),
+    UPCOMING("Upcoming");
 
     private final String name;
 
-    Frequency(String s) {
+    Attendance(String s) {
         name = s;
     }
 
