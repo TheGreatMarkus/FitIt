@@ -140,7 +140,7 @@ public class ScheduleFragment extends Fragment {
                         updateShownSchedule();
                     }).setTitle("A workout has passed!")
                             .setMessage("Found an upcoming workout that passed. " +
-                                    "Did you complete it?" + itemDT.toString()).show();
+                                    "Did you complete it?" + event.getName()).show();
                 }
             });
         });
@@ -171,7 +171,7 @@ public class ScheduleFragment extends Fragment {
         // Set current session as completed
         if (session.getAttendance() == Attendance.UPCOMING) {
             WriteBatch batch = db.batch();
-            activity.user.updatePoints(newAttendance, event, activity.users);
+            activity.user.updatePoints(newAttendance, event, activity.userCollection);
 
             session.setAttendance(newAttendance);
             batch.set(sessionCollection.document(session.getId()), session);
@@ -199,15 +199,14 @@ public class ScheduleFragment extends Fragment {
 
     }
 
+    private void addNewEvent(View view) {
+        Intent intent = new Intent(getActivity(), NewEventActivity.class);
+        startActivity(intent);
+    }
 
     public enum ScheduleMode {
         FUTURE,
         PAST,
-    }
-
-    private void addNewEvent(View view) {
-        Intent intent = new Intent(getActivity(), NewEventActivity.class);
-        startActivity(intent);
     }
 
 

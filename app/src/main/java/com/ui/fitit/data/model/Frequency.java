@@ -9,6 +9,7 @@ public enum Frequency {
 
     ONCE("Once", -1),
     DAILY("Daily", 1),
+    OTHER_DAY("Every Other Day", 2),
     WEEKLY("Weekly", 7);
 
     private final String name;
