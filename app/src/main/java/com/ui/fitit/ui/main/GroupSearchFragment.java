@@ -89,10 +89,6 @@ public class GroupSearchFragment extends Fragment {
 
     private void onGroupJoinAttempt(boolean createGroup) {
         String groupName = groupNameSearchText.getText().toString();
-        if (!groupName.matches("^[a-zA-Z0-9-_ ]*$")) {
-            Toast.makeText(activity, "Only alphanumeric characters for group names!", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         boolean groupExists = groupNames.contains(groupName);
         if (groupExists != createGroup) {

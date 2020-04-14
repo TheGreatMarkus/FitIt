@@ -65,7 +65,7 @@ public class GroupActivity extends AppCompatActivity {
         user = (User) intent.getSerializableExtra(Constants.INTENT_EXTRA_USER);
         group = (Group) intent.getSerializableExtra(Constants.INTENT_EXTRA_GROUP);
 
-        userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, group.getUsers());
+        userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
         messageAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, messageStrings);
 
         groupDocument = db.collection(Constants.GROUPS_COLLECTION).document(group.getId());
@@ -109,8 +109,10 @@ public class GroupActivity extends AppCompatActivity {
 
     private void onGroupUpdate(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
         Log.d(TAG, "onGroupUpdate Called");
+
         group = documentSnapshot.toObject(Group.class);
         if (group != null) {
+            Log.d(TAG, "Users: " + group.getUsers());
             groupNameView.setText(group.getName());
             users.removeAll(users);
             users.addAll(group.getUsers());
@@ -164,9 +166,11 @@ public class GroupActivity extends AppCompatActivity {
         if (showMessages) {
             newMessageLayout.setVisibility(View.VISIBLE);
             listView.setAdapter(messageAdapter);
+            messageAdapter.notifyDataSetChanged();
         } else {
             newMessageLayout.setVisibility(View.GONE);
             listView.setAdapter(userAdapter);
+            userAdapter.notifyDataSetChanged();
         }
 
     }
