@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     checkForFeedback();
                 }
             };
-            timer.schedule(checkFeedback, TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(5));
+            timer.schedule(checkFeedback, TimeUnit.SECONDS.toMillis(3), TimeUnit.MINUTES.toMillis(3));
         } catch (Exception e) {
             Log.e(TAG, "onResume: Error starting checkFeedback", e);
         }
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void checkForFeedback() {
         if (user != null && userFeedback != null) {
             LocalTime currentTime = LocalTime.now();
-            boolean todaysFeedbackRequired = currentTime.getHour() >= 18;
+            boolean todaysFeedbackRequired = currentTime.getHour() >= 16;
             if (todaysFeedbackRequired) {
                 if (userFeedback.size() == 0) {
                     notificationHandler.obtainMessage(1, "You have not yet given feedback on your experience! Please open up the side menu and leave feedback for today!").sendToTarget();
