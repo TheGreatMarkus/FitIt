@@ -80,7 +80,10 @@ public class GroupSearchFragment extends Fragment {
         Intent intent = new Intent(activity, GroupActivity.class);
         intent.putExtra(Constants.INTENT_EXTRA_USER, user);
         intent.putExtra(Constants.INTENT_EXTRA_GROUP, group);
+        activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                new ScheduleFragment()).commit();
         startActivity(intent);
+
     }
 
 
@@ -109,6 +112,8 @@ public class GroupSearchFragment extends Fragment {
         group.addUser(user.getUsername());
         groupCollection.document(group.getId()).set(group);
         goToGroupActivity(group);
+
+
     }
 
 

@@ -59,7 +59,6 @@ public class GroupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group);
-
         initViews();
 
         Intent intent = getIntent();
@@ -116,6 +115,9 @@ public class GroupActivity extends AppCompatActivity {
             users.removeAll(users);
             users.addAll(group.getUsers());
             updateTabView();
+        } else {
+            Toast.makeText(this, "Group no longer exists! Exiting", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
