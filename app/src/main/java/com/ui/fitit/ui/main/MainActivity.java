@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void fetchUserInformation() {
-        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
+        spLogin = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
 
         Intent i = getIntent();
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         users.document(username).addSnapshotListener(this, (document, e) -> {
             if (user == null || !user.getUsername().equals(username)
-                    || username.equals(SPUtilities.SP_LOGIN_NO_USER)
+                    || username.equals(SPUtilities.SP_NO_USER)
                     || document == null || !document.exists()) {
                 Toast.makeText(this, "Unexpected state. Going back to login screen.", Toast.LENGTH_SHORT).show();
                 logout();
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_group:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new GroupFragment()).commit();
+                        new GroupSearchFragment()).commit();
                 break;
             case R.id.nav_settings:
                 // TODO implement settings fragment
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void logout() {
-        spLogin.edit().remove(SPUtilities.SP_LOGIN_USERNAME).putBoolean(SPUtilities.SP_LOGIN_LOGGED_IN, false).apply();
+        spLogin.edit().remove(SPUtilities.SP_USERNAME).putBoolean(SPUtilities.SP_LOGGED_IN, false).apply();
         finish();
     }
 

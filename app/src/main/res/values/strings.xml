@@ -68,5 +68,6 @@
     <string name="m4">4</string>
     <string name="m5">5</string>
     <string name="m5_text">Very</string>
+    <string name="group_activity_title">Fit Group</string>
 
 </resources>

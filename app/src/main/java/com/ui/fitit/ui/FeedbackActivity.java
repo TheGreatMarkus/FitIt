@@ -77,9 +77,9 @@ public class FeedbackActivity extends AppCompatActivity {
     }
 
     private void setupPersistentStorage() {
-        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
+        spLogin = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
-        if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
+        if (!username.equals(SPUtilities.SP_NO_USER)) {
             feedback = users.document(username).collection(Constants.FEEDBACK_COLLECTION);
         } else {
             Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
@@ -168,7 +168,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
     private void setupOnSubmitListener() {
         submitButton.setOnClickListener(v -> {
-            String userName = SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE));
+            String userName = SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE));
             Feedback newFeedback = new Feedback(userName, new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
             Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + newFeedback);
             Toast.makeText(this, "Feedback submitted successfully", Toast.LENGTH_SHORT).show();
