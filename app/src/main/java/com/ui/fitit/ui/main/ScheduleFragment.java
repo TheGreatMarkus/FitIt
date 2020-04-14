@@ -15,13 +15,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.ui.fitit.Constants;
@@ -79,7 +78,7 @@ public class ScheduleFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        sessionCollection.addSnapshotListener(activity, (d, e) -> updateScheduleData());
+        sessionCollection.addSnapshotListener(activity, this::updateScheduleData);
     }
 
     private void initViews(View view) {
@@ -103,14 +102,12 @@ public class ScheduleFragment extends Fragment {
         });
     }
 
-    private void updateScheduleData() {
+    private void updateScheduleData(QuerySnapshot sessionQuery, FirebaseFirestoreException e) {
         Log.d(TAG, "updateScheduleData Called");
-        Task<QuerySnapshot> getEvents = eventCollection.get();
-        Task<QuerySnapshot> getSessions = sessionCollection.get();
+        sessions = Objects.requireNonNull(sessionQuery).toObjects(Session.class);
 
-        Tasks.whenAllComplete(getEvents, getSessions).addOnCompleteListener(command -> {
-            events = Objects.requireNonNull(getEvents.getResult()).toObjects(Event.class);
-            sessions = Objects.requireNonNull(getSessions.getResult()).toObjects(Session.class);
+        eventCollection.get().addOnSuccessListener(eventQuery -> {
+            events = Objects.requireNonNull(eventQuery).toObjects(Event.class);
             scheduleMap = ArrayListMultimap.create();
 
             events.forEach(event -> {

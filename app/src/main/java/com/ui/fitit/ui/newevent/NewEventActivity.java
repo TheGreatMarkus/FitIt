@@ -72,9 +72,9 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void setupPersistentStorage() {
-        spLogin = getSharedPreferences(SPUtilities.SP_LOGIN, Context.MODE_PRIVATE);
+        spLogin = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
         String username = SPUtilities.getLoggedInUserName(spLogin);
-        if (!username.equals(SPUtilities.SP_LOGIN_NO_USER)) {
+        if (!username.equals(SPUtilities.SP_NO_USER)) {
             eventCollection = users.document(username).collection(Constants.EVENTS_COLLECTION);
             sessionCollection = users.document(username).collection(Constants.SESSION_COLLECTION);
         } else {
