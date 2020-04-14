@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -20,17 +24,32 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.SPUtilities;
+import com.ui.fitit.data.model.Feedback;
 import com.ui.fitit.data.model.User;
 import com.ui.fitit.ui.FeedbackActivity;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private DrawerLayout drawer;
-    private SharedPreferences spLogin;
-
-    User user;
+    private static final String TAG = "MainActivity";
     final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
+    final CollectionReference userCollection = db.collection(Constants.USERS_COLLECTION);
+    User user;
+    CollectionReference feedbackCollection;
+    List<Feedback> userFeedback = new ArrayList<>();
+    Timer timer;
+    Handler notificationHandler;
+    private DrawerLayout drawer;
+    private SharedPreferences sp;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,23 +61,95 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         fetchUserInformation();
 
+
+        notificationHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(MainActivity.this, msg.obj.toString(), Toast.LENGTH_LONG).show();
+            }
+        };
+
+
     }
 
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume Called");
+        super.onResume();
+
+        try {
+            timer = new Timer();
+            TimerTask checkFeedback = new TimerTask() {
+                @Override
+                public void run() {
+                    checkForFeedback();
+                }
+            };
+            timer.schedule(checkFeedback, TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(5));
+        } catch (Exception e) {
+            Log.e(TAG, "onResume: Error starting checkFeedback", e);
+        }
+
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause Called");
+        super.onPause();
+        try {
+            timer.cancel();
+        } catch (Exception e) {
+            Log.e(TAG, "onResume: Error stopping checkFeedback", e);
+        }
+    }
+
+
+    private void checkForFeedback() {
+        if (user != null && userFeedback != null) {
+            LocalTime currentTime = LocalTime.now();
+            boolean todaysFeedbackRequired = currentTime.getHour() >= 18;
+            if (todaysFeedbackRequired) {
+                if (userFeedback.size() == 0) {
+                    notificationHandler.obtainMessage(1, "You have not yet given feedback on your experience! Please open up the side menu and leave feedback for today!").sendToTarget();
+                } else {
+                    userFeedback.sort((o1, o2) -> o2.compareTo(o1));
+                    Feedback latestFeedback = userFeedback.get(0);
+                    LocalDate today = LocalDate.now();
+
+                    if (latestFeedback.getDate().toLocalDate().isBefore(today)) {
+                        notificationHandler.obtainMessage(1, "Please complete the feedback form for today!").sendToTarget();
+                    }
+
+
+                }
+            }
+
+
+        }
+    }
+
+
     private void fetchUserInformation() {
-        spLogin = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
-        String username = SPUtilities.getLoggedInUserName(spLogin);
+        sp = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
+        String spUsername = SPUtilities.getLoggedInUserName(sp);
 
         Intent i = getIntent();
         user = (User) i.getSerializableExtra(Constants.INTENT_EXTRA_USER);
 
-        users.document(username).addSnapshotListener(this, (document, e) -> {
-            if (user == null || !user.getUsername().equals(username)
-                    || username.equals(SPUtilities.SP_NO_USER)
-                    || document == null || !document.exists()) {
+
+        userCollection.document(spUsername).addSnapshotListener(this, (document, e) -> {
+            User updatedUser = document.toObject(User.class);
+            if (updatedUser == null || spUsername.equals(SPUtilities.SP_NO_USER)) {
                 Toast.makeText(this, "Unexpected state. Going back to login screen.", Toast.LENGTH_SHORT).show();
                 logout();
             } else {
                 user = document.toObject(User.class);
+                feedbackCollection = userCollection.document(spUsername).collection(Constants.FEEDBACK_COLLECTION);
+                feedbackCollection.addSnapshotListener((query, e1) ->
+                        userFeedback = Objects.requireNonNull(query)
+                                .toObjects(Feedback.class)
+                                .stream().filter(Objects::nonNull).collect(Collectors.toList()));
             }
         });
     }
@@ -117,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void logout() {
-        spLogin.edit().remove(SPUtilities.SP_USERNAME).putBoolean(SPUtilities.SP_LOGGED_IN, false).apply();
+        sp.edit().remove(SPUtilities.SP_USERNAME).putBoolean(SPUtilities.SP_LOGGED_IN, false).apply();
         finish();
     }
 

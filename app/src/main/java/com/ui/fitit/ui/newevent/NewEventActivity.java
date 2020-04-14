@@ -39,24 +39,20 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
     private static final String TAG = "NewEventActivity";
 
+    EditText name;
+    EditText description;
+    EditText location;
+    TextView eventTime;
+    EditText duration;
+    Spinner frequencySpinner;
+    Button createEventButton;
+    Frequency frequency = Frequency.ONCE;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
     private CollectionReference eventCollection;
     private CollectionReference sessionCollection;
     private SharedPreferences spLogin;
-
-    EditText name;
-    EditText description;
-    EditText location;
-
-    TextView eventTime;
-    EditText duration;
-    Spinner frequencySpinner;
-    Button createEventButton;
-
-    Frequency frequency = Frequency.ONCE;
-
     private LocalTime startTime;
 
     @Override

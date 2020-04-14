@@ -77,8 +77,8 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="0.8"
                     android:gravity="right|center"
-                    android:text="Location"
                     android:minWidth="100dp"
+                    android:text="Location"
                     android:textSize="16dp" />
 
         </LinearLayout>
