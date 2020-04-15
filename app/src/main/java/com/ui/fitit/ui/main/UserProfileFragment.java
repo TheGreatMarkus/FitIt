@@ -36,7 +36,7 @@ public class UserProfileFragment extends Fragment {
         if (progressBar != null && user != null && levelTextView != null && pointTextView != null) {
             progressBar.setProgress(user.getLevelProgress().intValue());
             levelTextView.setText(activity.user.getLevel().toString());
-            pointTextView.setText(activity.user.getPoints() + " " + getString(R.string.points_unit));
+            pointTextView.setText(activity.user.getPoints() + " " + activity.getString(R.string.points_unit));
         }
     }
 
