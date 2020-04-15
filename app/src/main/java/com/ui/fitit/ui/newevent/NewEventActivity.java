@@ -2,8 +2,7 @@ package com.ui.fitit.ui.newevent;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,13 +23,13 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
-import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.Attendance;
 import com.ui.fitit.data.model.Event;
 import com.ui.fitit.data.model.FitDate;
 import com.ui.fitit.data.model.FitTime;
 import com.ui.fitit.data.model.Frequency;
 import com.ui.fitit.data.model.Session;
+import com.ui.fitit.data.model.User;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,31 +40,33 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
     private static final String TAG = "NewEventActivity";
 
-    EditText name;
-    EditText description;
-    EditText location;
-    TextView startTimeView;
-    TextView startDateView;
-    EditText duration;
-    Spinner frequencySpinner;
-    Button createEventButton;
-    Button setStartTimeButton;
-    Button setStartDateButton;
-    Frequency frequency = Frequency.ONCE;
-
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
     private CollectionReference eventCollection;
     private CollectionReference sessionCollection;
-    private SharedPreferences spLogin;
+
     private LocalTime startTime;
     private LocalDate startDate;
+    private Frequency frequency = Frequency.ONCE;
+    private User user;
+
+    private EditText name;
+    private EditText description;
+    private EditText location;
+    private TextView startTimeView;
+    private TextView startDateView;
+    private EditText duration;
+    private Spinner frequencySpinner;
+    private Button createEventButton;
+    private Button setStartTimeButton;
+    private Button setStartDateButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_event);
-        initAllComponents();
+        initViews();
 
         setupPersistentStorage();
 
@@ -74,19 +75,20 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void setupPersistentStorage() {
-        spLogin = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
-        String username = SPUtilities.getLoggedInUserName(spLogin);
-        if (!username.equals(SPUtilities.SP_NO_USER)) {
-            eventCollection = users.document(username).collection(Constants.EVENTS_COLLECTION);
-            sessionCollection = users.document(username).collection(Constants.SESSION_COLLECTION);
+        Intent intent = getIntent();
+        user = (User) intent.getSerializableExtra(Constants.INTENT_EXTRA_USER);
+
+        if (user != null && user.getUsername() != null) {
+            eventCollection = users.document(user.getUsername()).collection(Constants.EVENTS_COLLECTION);
+            sessionCollection = users.document(user.getUsername()).collection(Constants.SESSION_COLLECTION);
         } else {
-            Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Unexpected state. Redirecting to main screen.", Toast.LENGTH_SHORT).show();
             finish();
         }
 
     }
 
-    public void initAllComponents() {
+    public void initViews() {
         name = findViewById(R.id.name);
         description = findViewById(R.id.description);
         location = findViewById(R.id.item_location);

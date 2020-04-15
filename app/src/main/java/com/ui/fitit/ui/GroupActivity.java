@@ -81,7 +81,6 @@ public class GroupActivity extends AppCompatActivity {
         // Existing Group View
         groupNameView = findViewById(R.id.group_name);
         Button leaveGroupButton = findViewById(R.id.group_leave_button);
-        Button deleteGroupButton = findViewById(R.id.group_delete_button);
         Button seeUsersButton = findViewById(R.id.group_see_users);
         Button seeMessagesButton = findViewById(R.id.group_see_messages);
         listView = findViewById(R.id.group_list_view);
@@ -89,10 +88,6 @@ public class GroupActivity extends AppCompatActivity {
         newMessageText = findViewById(R.id.group_new_message_text);
         newMessageButton = findViewById(R.id.group_new_message_button);
 
-        deleteGroupButton.setOnClickListener(v -> {
-            groupDocument.delete();
-            finish();
-        });
 
         leaveGroupButton.setOnClickListener(v -> {
             leaveGroup();

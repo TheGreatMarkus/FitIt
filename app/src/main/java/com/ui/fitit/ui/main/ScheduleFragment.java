@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -134,7 +133,6 @@ public class ScheduleFragment extends Fragment {
                 LocalDateTime currentDT = LocalDateTime.now();
                 LocalDateTime itemDT = LocalDateTime.of(session.getDate().toLocalDate(), event.getEndTime().toLocalTime());
                 if (itemDT.isBefore(currentDT) && session.getAttendance() == Attendance.UPCOMING) {
-                    Toast.makeText(activity, "Found an upcoming workout that passed: " + event.getName(), Toast.LENGTH_SHORT).show();
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                     builder.setPositiveButton("Completed", (dialog, which) -> {
@@ -250,6 +248,7 @@ public class ScheduleFragment extends Fragment {
 
     private void addNewEvent(View view) {
         Intent intent = new Intent(getActivity(), NewEventActivity.class);
+        intent.putExtra(Constants.INTENT_EXTRA_USER, activity.user);
         startActivity(intent);
     }
 

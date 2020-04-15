@@ -92,7 +92,6 @@ public class GroupSearchFragment extends Fragment {
 
         boolean groupExists = groupNames.contains(groupName);
         if (groupExists != createGroup) {
-            Toast.makeText(activity, "Joining Group!", Toast.LENGTH_SHORT).show();
             joinGroup(groupName);
         } else if (!groupExists) {
             Toast.makeText(activity, "Group doesn't exist!", Toast.LENGTH_SHORT).show();

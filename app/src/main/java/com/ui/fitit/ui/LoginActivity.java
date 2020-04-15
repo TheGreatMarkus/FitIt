@@ -15,7 +15,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
-import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.User;
 import com.ui.fitit.ui.main.MainActivity;
 
@@ -28,7 +27,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
-    private SharedPreferences spLogin;
+    private SharedPreferences sp;
 
     private EditText usernameEditText;
     private EditText passwordEditText;
@@ -49,10 +48,10 @@ public class LoginActivity extends AppCompatActivity {
         confirmButton = findViewById(R.id.confirm_button);
         switchButton = findViewById(R.id.switch_button);
 
-        spLogin = getSharedPreferences(SPUtilities.SP_ID, MODE_PRIVATE);
+        sp = getSharedPreferences(Constants.SP_ID, MODE_PRIVATE);
 
-        if (spLogin.getBoolean(SPUtilities.SP_LOGGED_IN, false)) {
-            loginUser(spLogin.getString(SPUtilities.SP_USERNAME, SPUtilities.SP_NO_USER));
+        if (sp.getBoolean(Constants.SP_LOGGED_IN, false)) {
+            loginUser(sp.getString(Constants.SP_USERNAME, Constants.SP_NO_USER));
         }
     }
 
@@ -94,12 +93,12 @@ public class LoginActivity extends AppCompatActivity {
 
         User user = new User(username, hashedPassword, fullName, 0L);
         users.document(user.getUsername()).set(user);
-        Toast.makeText(LoginActivity.this, "User created successfully: " + username, Toast.LENGTH_SHORT).show();
         loginUser(username);
     }
 
     private void nonExistentUser(String username) {
         usernameEditText.setText("");
+        passwordEditText.setText("");
         Toast.makeText(LoginActivity.this, "Login failed: User doesn't exist: " + username, Toast.LENGTH_SHORT).show();
     }
 
@@ -139,8 +138,8 @@ public class LoginActivity extends AppCompatActivity {
         users.document(username).get().addOnSuccessListener(documentSnapshot -> {
             User user = documentSnapshot.toObject(User.class);
             if (user != null && user.getUsername() != null) {
-                spLogin.edit().putString(SPUtilities.SP_USERNAME, user.getUsername())
-                        .putBoolean(SPUtilities.SP_LOGGED_IN, true).apply();
+                sp.edit().putString(Constants.SP_USERNAME, user.getUsername())
+                        .putBoolean(Constants.SP_LOGGED_IN, true).apply();
                 Toast.makeText(LoginActivity.this, "Login Successful. Welcome, " + username, Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.putExtra(Constants.INTENT_EXTRA_USER, user);

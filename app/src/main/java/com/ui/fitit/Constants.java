@@ -15,6 +15,11 @@ public class Constants {
 
     public static long POINTS_PER_LEVEL = 100;
 
+    public static String SP_ID = "sp-fit-it";
+    public static String SP_USERNAME = "user";
+    public static String SP_LOGGED_IN = "logged_in";
+    public static String SP_NO_USER = "$no-user$";
+
     private Constants() {
     }
 
