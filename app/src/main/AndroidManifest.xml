@@ -13,7 +13,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
         <activity
-                android:name=".ui.GroupActivity"
+                android:name=".ui.main.GroupFragment"
                 android:label="@string/group_activity_title" />
         <activity
                 android:name=".ui.LoginActivity"
