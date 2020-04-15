@@ -20,6 +20,7 @@ public class UserProfileFragment extends Fragment {
     private ProgressBar progressBar;
     private MainActivity activity;
     private TextView levelTextView;
+    private TextView pointTextView;
 
     @Nullable
     @Override
@@ -32,9 +33,10 @@ public class UserProfileFragment extends Fragment {
     }
 
     public void updateProgressBar(User user) {
-        if (progressBar != null && user != null && levelTextView != null) {
+        if (progressBar != null && user != null && levelTextView != null && pointTextView != null) {
             progressBar.setProgress(user.getLevelProgress().intValue());
             levelTextView.setText(activity.user.getLevel().toString());
+            pointTextView.setText(activity.user.getPoints() + " " + getString(R.string.points_unit));
         }
     }
 
@@ -42,6 +44,7 @@ public class UserProfileFragment extends Fragment {
         TextView usernameTextView = view.findViewById(R.id.profile_username);
         TextView fullNameTextView = view.findViewById(R.id.profile_full_name);
         levelTextView = view.findViewById(R.id.profile_level_text);
+        pointTextView = view.findViewById(R.id.point_text);
         progressBar = view.findViewById(R.id.profile_progress_bar);
 
         usernameTextView.setText(activity.user.getUsername());
