@@ -23,8 +23,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
-import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.Feedback;
+import com.ui.fitit.data.model.Group;
 import com.ui.fitit.data.model.User;
 import com.ui.fitit.ui.FeedbackActivity;
 
@@ -43,24 +43,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String TAG = "MainActivity";
     final FirebaseFirestore db = FirebaseFirestore.getInstance();
     final CollectionReference userCollection = db.collection(Constants.USERS_COLLECTION);
-    User user;
     CollectionReference feedbackCollection;
+
+    User user;
+    Group group;
     List<Feedback> userFeedback = new ArrayList<>();
     Timer timer;
     Handler notificationHandler;
+
     private DrawerLayout drawer;
     private SharedPreferences sp;
+    private UserProfileFragment userProfileFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
         initViews(savedInstanceState);
 
-        fetchUserInformation();
-
+        initInformation();
 
         notificationHandler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -69,95 +70,66 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(MainActivity.this, msg.obj.toString(), Toast.LENGTH_LONG).show();
             }
         };
-
-
     }
+
 
     @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume Called");
-        super.onResume();
-
-        try {
-            timer = new Timer();
-            TimerTask checkFeedback = new TimerTask() {
-                @Override
-                public void run() {
-                    checkForFeedback();
-                }
-            };
-            timer.schedule(checkFeedback, TimeUnit.SECONDS.toMillis(3), TimeUnit.MINUTES.toMillis(3));
-        } catch (Exception e) {
-            Log.e(TAG, "onResume: Error starting checkFeedback", e);
-        }
-
-    }
-
-    @Override
-    protected void onPause() {
-        Log.d(TAG, "onPause Called");
-        super.onPause();
-        try {
-            timer.cancel();
-        } catch (Exception e) {
-            Log.e(TAG, "onResume: Error stopping checkFeedback", e);
-        }
-    }
-
-
-    private void checkForFeedback() {
-        if (user != null && userFeedback != null) {
-            LocalTime currentTime = LocalTime.now();
-            boolean todaysFeedbackRequired = currentTime.getHour() >= 16;
-            if (todaysFeedbackRequired) {
-                if (userFeedback.size() == 0) {
-                    notificationHandler.obtainMessage(1, "You have not yet given feedback on your experience! Please open up the side menu and leave feedback for today!").sendToTarget();
-                } else {
-                    userFeedback.sort((o1, o2) -> o2.compareTo(o1));
-                    Feedback latestFeedback = userFeedback.get(0);
-                    LocalDate today = LocalDate.now();
-
-                    if (latestFeedback.getDate().toLocalDate().isBefore(today)) {
-                        notificationHandler.obtainMessage(1, "Please complete the feedback form for today!").sendToTarget();
-                    }
-
-
-                }
-            }
-
-
-        }
-    }
-
-
-    private void fetchUserInformation() {
-        sp = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
-        String spUsername = SPUtilities.getLoggedInUserName(sp);
-
-        Intent i = getIntent();
-        user = (User) i.getSerializableExtra(Constants.INTENT_EXTRA_USER);
-
-
-        userCollection.document(spUsername).addSnapshotListener(this, (document, e) -> {
+    protected void onStart() {
+        super.onStart();
+        setupFeedbackCheck();
+        feedbackCollection.addSnapshotListener(this, (query, e1) -> {
+            Log.d(TAG, "initInformation: feedbackCollection addSnapshotListener called");
+            userFeedback = Objects.requireNonNull(query)
+                    .toObjects(Feedback.class)
+                    .stream().filter(Objects::nonNull).collect(Collectors.toList());
+        });
+//
+        userCollection.document(user.getUsername()).addSnapshotListener(this, (document, e) -> {
+            Log.d(TAG, "initInformation userCollection addSnapshotListener called");
             User updatedUser = document.toObject(User.class);
-            if (updatedUser == null || spUsername.equals(SPUtilities.SP_NO_USER)) {
-                Toast.makeText(this, "Unexpected state. Going back to login screen.", Toast.LENGTH_SHORT).show();
-                logout();
+            if (updatedUser != null) {
+                user = updatedUser;
+                userProfileFragment.updateProgressBar(user);
             } else {
-                user = document.toObject(User.class);
-                feedbackCollection = userCollection.document(spUsername).collection(Constants.FEEDBACK_COLLECTION);
-                feedbackCollection.addSnapshotListener((query, e1) ->
-                        userFeedback = Objects.requireNonNull(query)
-                                .toObjects(Feedback.class)
-                                .stream().filter(Objects::nonNull).collect(Collectors.toList()));
+                Toast.makeText(this, "User " + user.getUsername() + "no longer exist! Redirecting", Toast.LENGTH_SHORT).show();
+                logout();
             }
         });
     }
 
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        removeFeedbackCheck();
+    }
+
+
+    private void initInformation() {
+        sp = getSharedPreferences(Constants.SP_ID, Context.MODE_PRIVATE);
+        String username = sp.getString(Constants.SP_USERNAME, null);
+        boolean loggedIn = sp.getBoolean(Constants.SP_LOGGED_IN, false);
+        Intent i = getIntent();
+        user = (User) i.getSerializableExtra(Constants.INTENT_EXTRA_USER);
+
+        if (username == null || !loggedIn || user == null || user.getUsername() == null) {
+            Toast.makeText(this, "Error during login. Can't fetch user information! Redirecting to login.", Toast.LENGTH_SHORT).show();
+            logout();
+        }
+
+        feedbackCollection = userCollection.document(user.getUsername()).collection(Constants.FEEDBACK_COLLECTION);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initViews(Bundle savedInstanceState) {
+        userProfileFragment = new UserProfileFragment();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
 
         drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -183,8 +155,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new ScheduleFragment()).commit();
                 break;
             case R.id.nav_user_profile:
+
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new UserProfileFragment()).commit();
+                        userProfileFragment).commit();
                 break;
             case R.id.nav_group:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
@@ -198,7 +171,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 logout();
                 break;
             case R.id.nav_feedback:
-                startActivity(new Intent(MainActivity.this, FeedbackActivity.class));
+                Intent intent = new Intent(MainActivity.this, FeedbackActivity.class);
+                intent.putExtra(Constants.INTENT_EXTRA_USER, user);
+                startActivity(intent);
                 break;
         }
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -208,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void logout() {
-        sp.edit().remove(SPUtilities.SP_USERNAME).putBoolean(SPUtilities.SP_LOGGED_IN, false).apply();
+        sp.edit().remove(Constants.SP_USERNAME).putBoolean(Constants.SP_LOGGED_IN, false).apply();
         finish();
     }
 
@@ -224,5 +199,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+
+    private void checkForFeedback() {
+        Log.d(TAG, "checkForFeedback Called");
+        if (user != null && userFeedback != null) {
+            LocalTime currentTime = LocalTime.now();
+            boolean todaysFeedbackRequired = currentTime.getHour() >= 16;
+            if (todaysFeedbackRequired) {
+                if (userFeedback.size() == 0) {
+                    notificationHandler.obtainMessage(1, "You have not yet given feedback on your experience! Please open up the side menu and leave feedback for today!").sendToTarget();
+                } else {
+                    userFeedback.sort((o1, o2) -> o2.compareTo(o1));
+                    Feedback latestFeedback = userFeedback.get(0);
+                    LocalDate today = LocalDate.now();
+
+                    if (latestFeedback.getDate().toLocalDate().isBefore(today)) {
+                        notificationHandler.obtainMessage(1, "Please complete the feedback form for today!").sendToTarget();
+                    }
+
+                }
+            }
+        }
+    }
+
+    private void setupFeedbackCheck() {
+        Log.d(TAG, "setupFeedbackCheck Called");
+        try {
+            timer = new Timer();
+            TimerTask checkFeedback = new TimerTask() {
+                @Override
+                public void run() {
+                    checkForFeedback();
+                }
+            };
+            timer.schedule(checkFeedback, TimeUnit.SECONDS.toMillis(3), TimeUnit.MINUTES.toMillis(3));
+        } catch (Exception e) {
+            Log.e(TAG, "onResume: Error starting checkFeedback", e);
+        }
+    }
+
+    private void removeFeedbackCheck() {
+        Log.d(TAG, "removeFeedbackCheck Called");
+        try {
+            timer.cancel();
+        } catch (Exception e) {
+            Log.e(TAG, "onResume: Error stopping checkFeedback", e);
+        }
+    }
 
 }

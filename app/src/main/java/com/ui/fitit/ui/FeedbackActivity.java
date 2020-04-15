@@ -1,7 +1,6 @@
 package com.ui.fitit.ui;
 
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -20,36 +19,36 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
-import com.ui.fitit.SPUtilities;
 import com.ui.fitit.data.model.Feedback;
 import com.ui.fitit.data.model.FitDate;
 import com.ui.fitit.data.model.Motivation;
 import com.ui.fitit.data.model.PostSessionFeeling;
+import com.ui.fitit.data.model.User;
 
 import java.time.LocalDate;
 
 public class FeedbackActivity extends AppCompatActivity {
 
     private static final String TAG = "FeedbackActivity";
-    RadioGroup motivationButtonsGroup;
-    RadioGroup feelingGroup;
-    SeekBar successSeekBar;
-    TextView progressTextView;
-    Button submitButton;
-    CheckBox workedTodayCheckBox;
-    LinearLayout feedbackSuccessQuestion;
-
-    @Motivation
-    int motivationSelected;
-    double successPercentage;
-    @PostSessionFeeling
-    int postSessionFeeling;
-
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
-    private CollectionReference feedback;
-    private SharedPreferences spLogin;
+    private CollectionReference feedbackCollection;
+
+    @Motivation
+    private int motivationSelected;
+    private double successPercentage;
+    @PostSessionFeeling
+    private int postSessionFeeling;
+    private User user;
+
+    private RadioGroup motivationButtonsGroup;
+    private RadioGroup feelingGroup;
+    private SeekBar successSeekBar;
+    private TextView progressTextView;
+    private Button submitButton;
+    private CheckBox workedTodayCheckBox;
+    private LinearLayout feedbackSuccessQuestion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +63,11 @@ public class FeedbackActivity extends AppCompatActivity {
         int height = dm.heightPixels;
         getWindow().setLayout((int) (width * 0.9), (int) (height * 0.5));
 
-        init();
+        initView();
         setupPersistentStorage();
     }
 
-    private void init() {
+    private void initView() {
         motivationButtonsGroup = findViewById(R.id.motivationButtonsGroup);
         successSeekBar = findViewById(R.id.successSeekbar);
         progressTextView = findViewById(R.id.progress);
@@ -85,15 +84,16 @@ public class FeedbackActivity extends AppCompatActivity {
     }
 
     private void setupPersistentStorage() {
-        spLogin = getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE);
-        String username = SPUtilities.getLoggedInUserName(spLogin);
-        if (!username.equals(SPUtilities.SP_NO_USER)) {
-            feedback = users.document(username).collection(Constants.FEEDBACK_COLLECTION);
+        Intent intent = getIntent();
+        user = (User) intent.getSerializableExtra(Constants.INTENT_EXTRA_USER);
+        if (user != null && user.getUsername() != null) {
+            feedbackCollection = users.document(user.getUsername()).collection(Constants.FEEDBACK_COLLECTION);
         } else {
             Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
+
 
     private void setIconAsSelected(int id) {
         findViewById(id).getBackground().setTint(getColor(R.color.colorAccent));
@@ -184,13 +184,12 @@ public class FeedbackActivity extends AppCompatActivity {
 
     private void setupOnSubmitListener() {
         submitButton.setOnClickListener(v -> {
-            String userName = SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE));
             successPercentage = !workedTodayCheckBox.isChecked() ? 0.0 : successPercentage;
-            Feedback newFeedback = new Feedback(userName, new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
+            Feedback newFeedback = new Feedback(user.getUsername(), new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
             Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + newFeedback);
             Toast.makeText(this, "Feedback submitted successfully", Toast.LENGTH_SHORT).show();
 
-            this.feedback.document(newFeedback.getId()).set(newFeedback).addOnFailureListener(e -> {
+            this.feedbackCollection.document(newFeedback.getId()).set(newFeedback).addOnFailureListener(e -> {
                 Log.d(TAG, "onSubmitFeedback: Error occured while submitting feedback!", e);
             });
             finish();

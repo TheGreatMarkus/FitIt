@@ -1,7 +1,5 @@
 package com.ui.fitit.ui.main;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,13 +14,14 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
 import com.ui.fitit.data.model.Group;
-import com.ui.fitit.data.model.User;
-import com.ui.fitit.ui.GroupActivity;
+import com.ui.fitit.data.model.Message;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +33,14 @@ public class GroupSearchFragment extends Fragment {
 
     private static final String TAG = "GroupFragment";
 
-    private AutoCompleteTextView groupNameSearchText;
-
-    private SharedPreferences sp;
     private CollectionReference groupCollection;
+    private ListenerRegistration groupCollectionRegistration;
     private MainActivity activity;
-    private User user;
     private List<Group> groups = new ArrayList<>();
     private List<String> groupNames = new ArrayList<>();
+
+
+    private AutoCompleteTextView groupNameSearchText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,39 +49,42 @@ public class GroupSearchFragment extends Fragment {
         initViews(view);
 
         activity = (MainActivity) requireActivity();
-        user = activity.user;
 
         return view;
     }
+
 
     @Override
     public void onStart() {
         super.onStart();
         groupCollection = activity.db.collection(Constants.GROUPS_COLLECTION);
-        groupCollection.addSnapshotListener(activity, this::fetchGroupInformation);
+        groupCollectionRegistration = groupCollection.addSnapshotListener(this::fetchGroupInformation);
 
-        groupCollection.whereArrayContains("users", user.getUsername()).get().addOnSuccessListener(query -> {
+        groupCollection.whereArrayContains("users", activity.user.getUsername()).get().addOnSuccessListener(query -> {
             Log.d(TAG, "onStart: Looking to see if user is already in a group");
             List<Group> groupsWithUser = query.toObjects(Group.class);
             if (groupsWithUser.size() == 1) {
                 Group group = groupsWithUser.get(0);
                 if (group != null && group.getId() != null) {
                     Log.d(TAG, "onStart: User already in a group. Going to activity");
-                    goToGroupActivity(group);
+                    goToGroupFragment(group);
                 }
 
             }
         });
     }
 
-    private void goToGroupActivity(@NonNull Group group) {
+    @Override
+    public void onStop() {
+        super.onStop();
+        groupCollectionRegistration.remove();
+    }
+
+    private void goToGroupFragment(@NonNull Group group) {
         Log.d(TAG, "goToGroupActivity Called");
-        Intent intent = new Intent(activity, GroupActivity.class);
-        intent.putExtra(Constants.INTENT_EXTRA_USER, user);
-        intent.putExtra(Constants.INTENT_EXTRA_GROUP, group);
+        activity.group = group;
         activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                new ScheduleFragment()).commit();
-        startActivity(intent);
+                new GroupFragment()).commit();
 
     }
 
@@ -92,7 +94,6 @@ public class GroupSearchFragment extends Fragment {
 
         boolean groupExists = groupNames.contains(groupName);
         if (groupExists != createGroup) {
-            Toast.makeText(activity, "Joining Group!", Toast.LENGTH_SHORT).show();
             joinGroup(groupName);
         } else if (!groupExists) {
             Toast.makeText(activity, "Group doesn't exist!", Toast.LENGTH_SHORT).show();
@@ -105,9 +106,17 @@ public class GroupSearchFragment extends Fragment {
     private void joinGroup(String groupName) {
         Group group = groups.stream().filter(g -> g.getName().equals(groupName)).findFirst()
                 .orElseGet(() -> new Group(groupName));
-        group.addUser(user.getUsername());
-        groupCollection.document(group.getId()).set(group);
-        goToGroupActivity(group);
+        // Add user to group
+        group.addUser(activity.user.getUsername());
+        DocumentReference groupDocument = groupCollection.document(group.getId());
+        groupDocument.set(group);
+
+        // Add message to group chat about new member
+        CollectionReference messageCollection = groupDocument.collection(Constants.MESSAGE_COLLECTION);
+        Message joinMessage = new Message(System.currentTimeMillis(), String.format("User %s has joined the group.", activity.user.getUsername()), "FitIt");
+        messageCollection.add(joinMessage);
+
+        goToGroupFragment(group);
 
 
     }

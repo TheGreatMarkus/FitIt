@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +21,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.ui.fitit.Constants;
@@ -53,6 +53,7 @@ public class ScheduleFragment extends Fragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference eventCollection;
     private CollectionReference sessionCollection;
+    private ListenerRegistration sessionCollectionRegistration;
     private EventAdapter adapter;
     private MainActivity activity;
 
@@ -80,10 +81,17 @@ public class ScheduleFragment extends Fragment {
         return view;
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
-        sessionCollection.addSnapshotListener(activity, this::updateScheduleData);
+        sessionCollectionRegistration = sessionCollection.addSnapshotListener(this::updateScheduleData);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        sessionCollectionRegistration.remove();
     }
 
     private void initViews(View view) {
@@ -134,7 +142,6 @@ public class ScheduleFragment extends Fragment {
                 LocalDateTime currentDT = LocalDateTime.now();
                 LocalDateTime itemDT = LocalDateTime.of(session.getDate().toLocalDate(), event.getEndTime().toLocalTime());
                 if (itemDT.isBefore(currentDT) && session.getAttendance() == Attendance.UPCOMING) {
-                    Toast.makeText(activity, "Found an upcoming workout that passed: " + event.getName(), Toast.LENGTH_SHORT).show();
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                     builder.setPositiveButton("Completed", (dialog, which) -> {
@@ -250,6 +257,7 @@ public class ScheduleFragment extends Fragment {
 
     private void addNewEvent(View view) {
         Intent intent = new Intent(getActivity(), NewEventActivity.class);
+        intent.putExtra(Constants.INTENT_EXTRA_USER, activity.user);
         startActivity(intent);
     }
 
