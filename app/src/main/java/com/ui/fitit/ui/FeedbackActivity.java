@@ -5,7 +5,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -33,6 +36,8 @@ public class FeedbackActivity extends AppCompatActivity {
     SeekBar successSeekBar;
     TextView progressTextView;
     Button submitButton;
+    CheckBox workedTodayCheckBox;
+    LinearLayout feedbackSuccessQuestion;
 
     @Motivation
     int motivationSelected;
@@ -69,9 +74,12 @@ public class FeedbackActivity extends AppCompatActivity {
         progressTextView = findViewById(R.id.progress);
         feelingGroup = findViewById(R.id.feelingGroup);
         submitButton = findViewById(R.id.submit_button);
+        workedTodayCheckBox = findViewById(R.id.workedTodayCheckBox);
+        feedbackSuccessQuestion = findViewById(R.id.progressQuestion);
 
         setUpMotivationListener();
-        setupSucessListener();
+        setupCheckBoxListener();
+        setupSuccessListener();
         setupFeelingsListener();
         setupOnSubmitListener();
     }
@@ -120,7 +128,15 @@ public class FeedbackActivity extends AppCompatActivity {
         });
     }
 
-    private void setupSucessListener() {
+
+    private void setupCheckBoxListener() {
+        workedTodayCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            feedbackSuccessQuestion.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            submitButton.setEnabled(isAllQuestionsAnswered());
+        });
+    }
+
+    private void setupSuccessListener() {
         successSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -169,6 +185,7 @@ public class FeedbackActivity extends AppCompatActivity {
     private void setupOnSubmitListener() {
         submitButton.setOnClickListener(v -> {
             String userName = SPUtilities.getLoggedInUserName(getSharedPreferences(SPUtilities.SP_ID, Context.MODE_PRIVATE));
+            successPercentage = !workedTodayCheckBox.isChecked() ? 0.0 : successPercentage;
             Feedback newFeedback = new Feedback(userName, new FitDate(LocalDate.now()), motivationSelected, successPercentage, postSessionFeeling);
             Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + newFeedback);
             Toast.makeText(this, "Feedback submitted successfully", Toast.LENGTH_SHORT).show();
@@ -181,6 +198,6 @@ public class FeedbackActivity extends AppCompatActivity {
     }
 
     private boolean isAllQuestionsAnswered() {
-        return motivationSelected != 0 && successPercentage != 0.0 && postSessionFeeling != 0;
+        return motivationSelected != 0 && successPercentage != 0.0 && postSessionFeeling != 0 || motivationSelected != 0 && !workedTodayCheckBox.isChecked() && postSessionFeeling != 0;
     }
 }
