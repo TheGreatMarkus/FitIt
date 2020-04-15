@@ -34,6 +34,7 @@ import com.ui.fitit.data.model.User;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class NewEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
         TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
@@ -45,8 +46,8 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     private CollectionReference eventCollection;
     private CollectionReference sessionCollection;
 
-    private LocalTime startTime;
-    private LocalDate startDate;
+    LocalTime startTime = LocalTime.now();
+    LocalDate startDate = LocalDate.now();
     private Frequency frequency = Frequency.ONCE;
     private User user;
 
@@ -70,8 +71,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
         setupPersistentStorage();
 
-        startTime = LocalTime.now();
-        startTimeView.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
+
     }
 
     private void setupPersistentStorage() {
@@ -93,7 +93,9 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         description = findViewById(R.id.description);
         location = findViewById(R.id.item_location);
         startTimeView = findViewById(R.id.event_start_time);
+        setStartTimeViewText();
         startDateView = findViewById(R.id.event_start_date);
+        setStartDateViewText();
         duration = findViewById(R.id.event_duration);
 
         createEventButton = findViewById(R.id.create_event_button);
@@ -129,6 +131,12 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
 
             // Compute end time
             int eventDuration = Integer.parseInt(eventDurationText);
+
+            long minutesTillNextDay = startTime.until(LocalTime.of(23, 59, 59), ChronoUnit.MINUTES);
+            if (minutesTillNextDay < eventDuration) {
+                Toast.makeText(this, "Event can't go over to the next day! Please adjust the duration or start time.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             LocalTime endTime = startTime.plusMinutes(eventDuration);
 
@@ -192,13 +200,25 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onTimeSet(TimePicker view, int hour, int minute) {
         startTime = LocalTime.of(hour, minute);
-        startTimeView.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
+        setStartTimeViewText();
     }
+
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         Log.d(TAG, String.format("onDateSet Called: %d, %d, %d", year, month, dayOfMonth));
         startDate = LocalDate.of(year, month + 1, dayOfMonth);
+        setStartDateViewText();
+    }
+
+
+    private void setStartDateViewText() {
         startDateView.setText(startDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
+
+    private void setStartTimeViewText() {
+        startTimeView.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
+    }
+
+
 }

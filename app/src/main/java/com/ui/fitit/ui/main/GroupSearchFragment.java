@@ -104,7 +104,7 @@ public class GroupSearchFragment extends Fragment {
 
         // Add message to group chat about new member
         CollectionReference messageCollection = groupDocument.collection(Constants.MESSAGE_COLLECTION);
-        Message joinMessage = new Message(System.currentTimeMillis(), String.format("User %s has joined the group!", activity.user.getUsername()), "FitIt");
+        Message joinMessage = new Message(System.currentTimeMillis(), String.format("User %s has joined the group.", activity.user.getUsername()), "FitIt");
         messageCollection.add(joinMessage);
 
         goToGroupFragment(group);
