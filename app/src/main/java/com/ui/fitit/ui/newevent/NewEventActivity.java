@@ -1,5 +1,6 @@
 package com.ui.fitit.ui.newevent;
 
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -35,17 +37,20 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class NewEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
-        TimePickerDialog.OnTimeSetListener {
+        TimePickerDialog.OnTimeSetListener, DatePickerDialog.OnDateSetListener {
 
     private static final String TAG = "NewEventActivity";
 
     EditText name;
     EditText description;
     EditText location;
-    TextView eventTime;
+    TextView startTimeView;
+    TextView startDateView;
     EditText duration;
     Spinner frequencySpinner;
     Button createEventButton;
+    Button setStartTimeButton;
+    Button setStartDateButton;
     Frequency frequency = Frequency.ONCE;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -54,6 +59,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     private CollectionReference sessionCollection;
     private SharedPreferences spLogin;
     private LocalTime startTime;
+    private LocalDate startDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +70,7 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         setupPersistentStorage();
 
         startTime = LocalTime.now();
-        eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
+        startTimeView.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
     }
 
     private void setupPersistentStorage() {
@@ -84,17 +90,25 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         name = findViewById(R.id.name);
         description = findViewById(R.id.description);
         location = findViewById(R.id.item_location);
-        eventTime = findViewById(R.id.event_time);
+        startTimeView = findViewById(R.id.event_start_time);
+        startDateView = findViewById(R.id.event_start_date);
         duration = findViewById(R.id.event_duration);
 
-        createEventButton = findViewById(R.id.button);
+        createEventButton = findViewById(R.id.create_event_button);
         createEventButton.setOnClickListener(this::onCreateEvent);
+
+        setStartTimeButton = findViewById(R.id.event_start_time_button);
+        setStartTimeButton.setOnClickListener(this::showTimePickerDialog);
+
+        setStartDateButton = findViewById(R.id.event_start_date_button);
+        setStartDateButton.setOnClickListener(this::showDatePickerDialog);
 
         frequencySpinner = findViewById(R.id.frequency_spinner);
         initSpinner();
 
 
     }
+
 
     public void initSpinner() {
         ArrayAdapter<Frequency> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Frequency.values());
@@ -111,16 +125,14 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
             String eventDescription = description.getText().toString();
             String eventLocation = location.getText().toString();
 
-
             // Compute end time
             int eventDuration = Integer.parseInt(eventDurationText);
-
 
             LocalTime endTime = startTime.plusMinutes(eventDuration);
 
             FitTime startFitTime = new FitTime(startTime);
             FitTime endFitTime = new FitTime(endTime);
-            FitDate startFitDate = new FitDate(LocalDate.now());
+            FitDate startFitDate = new FitDate(startDate);
 
             Event event = new Event(eventName, eventDescription, eventLocation, startFitTime, endFitTime, startFitDate, frequency);
             Session session = new Session(startFitDate, event.getId(), Attendance.UPCOMING);
@@ -141,11 +153,13 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
     }
 
     public boolean checkInputValidity() {
-        if (eventTime.getText().toString().isEmpty()
+        if (startTimeView.getText().toString().isEmpty()
                 || name.getText().toString().isEmpty()
                 || description.getText().toString().isEmpty()
                 || duration.getText().toString().isEmpty()
-                || location.getText().toString().isEmpty()) {
+                || location.getText().toString().isEmpty()
+                || startDateView.getText().toString().isEmpty()
+                || startTimeView.getText().toString().isEmpty()) {
             Toast.makeText(this, "Please don't leave any empty fields", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -168,9 +182,21 @@ public class NewEventActivity extends AppCompatActivity implements AdapterView.O
         newFragment.show(getSupportFragmentManager(), "timePicker");
     }
 
+    private void showDatePickerDialog(View view) {
+        DialogFragment newFragment = new DatePickerFragment();
+        newFragment.show(getSupportFragmentManager(), "timePicker");
+    }
+
     @Override
     public void onTimeSet(TimePicker view, int hour, int minute) {
         startTime = LocalTime.of(hour, minute);
-        eventTime.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
+        startTimeView.setText(startTime.format(DateTimeFormatter.ofPattern(Constants.TIME_FORMAT)));
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        Log.d(TAG, String.format("onDateSet Called: %d, %d, %d", year, month, dayOfMonth));
+        startDate = LocalDate.of(year, month + 1, dayOfMonth);
+        startDateView.setText(startDate.format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
 }
