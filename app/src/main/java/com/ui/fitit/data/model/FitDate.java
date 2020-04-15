@@ -1,5 +1,6 @@
 package com.ui.fitit.data.model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
 
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FitDate {
+public class FitDate implements Serializable {
 
     private int year;
     private Month month;

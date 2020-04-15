@@ -20,6 +20,9 @@ public class Constants {
     public static String SP_LOGGED_IN = "logged_in";
     public static String SP_NO_USER = "$no-user$";
 
+    public static int FEEDBACK_PING_HOUR = 16;
+    public static int FEEDBACK_URGENT_HOUR = 18;
+
     private Constants() {
     }
 

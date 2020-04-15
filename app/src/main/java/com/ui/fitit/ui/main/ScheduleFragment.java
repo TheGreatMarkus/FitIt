@@ -150,9 +150,8 @@ public class ScheduleFragment extends Fragment {
                     }).setNegativeButton("Missed", (dialog, which) -> {
                         onSessionAttended(event, session, Attendance.MISSED);
                         updateShownSchedule();
-                    }).setTitle("A workout has passed!")
-                            .setMessage("Found an upcoming workout that passed. " +
-                                    "Did you complete it?" + event.getName()).show();
+                    }).setTitle("An upcoming session now passed!")
+                            .setMessage(String.format("\"%s\" was an upcoming event that now passed. Did you complete or miss it?", event.getName())).show();
                 }
             });
         });

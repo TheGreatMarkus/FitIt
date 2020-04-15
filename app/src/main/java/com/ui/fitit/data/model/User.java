@@ -18,6 +18,7 @@ public class User implements Serializable {
     String hashedPassword;
     String fullName;
     long points;
+    FitDate creationDate;
 
     public void updatePoints(Long newPoints) {
         points += newPoints;

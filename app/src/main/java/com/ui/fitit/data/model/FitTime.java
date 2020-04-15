@@ -1,5 +1,6 @@
 package com.ui.fitit.data.model;
 
+import java.io.Serializable;
 import java.time.LocalTime;
 
 import lombok.AllArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FitTime {
+public class FitTime implements Serializable {
     private int hour;
     private int minute;
 

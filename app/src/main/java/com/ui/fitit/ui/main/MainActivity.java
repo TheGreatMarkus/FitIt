@@ -1,12 +1,10 @@
 package com.ui.fitit.ui.main;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -30,12 +28,10 @@ import com.ui.fitit.ui.FeedbackActivity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -48,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     User user;
     Group group;
     List<Feedback> userFeedback = new ArrayList<>();
-    Timer timer;
-    Handler notificationHandler;
 
     private DrawerLayout drawer;
     private SharedPreferences sp;
@@ -62,26 +56,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initViews(savedInstanceState);
 
         initInformation();
-
-        notificationHandler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                super.handleMessage(msg);
-                Toast.makeText(MainActivity.this, msg.obj.toString(), Toast.LENGTH_LONG).show();
-            }
-        };
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-        setupFeedbackCheck();
         feedbackCollection.addSnapshotListener(this, (query, e1) -> {
             Log.d(TAG, "initInformation: feedbackCollection addSnapshotListener called");
             userFeedback = Objects.requireNonNull(query)
                     .toObjects(Feedback.class)
                     .stream().filter(Objects::nonNull).collect(Collectors.toList());
+            checkForFeedback();
         });
 //
         userCollection.document(user.getUsername()).addSnapshotListener(this, (document, e) -> {
@@ -97,14 +83,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        removeFeedbackCheck();
-    }
-
-
     private void initInformation() {
         sp = getSharedPreferences(Constants.SP_ID, Context.MODE_PRIVATE);
         String username = sp.getString(Constants.SP_USERNAME, null);
@@ -118,11 +96,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         feedbackCollection = userCollection.document(user.getUsername()).collection(Constants.FEEDBACK_COLLECTION);
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     private void initViews(Bundle savedInstanceState) {
@@ -165,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_settings:
                 // TODO implement settings fragment
-                Toast.makeText(this, "Opening Settings", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Settings are not implemented!", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_logout:
                 logout();
@@ -204,47 +177,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d(TAG, "checkForFeedback Called");
         if (user != null && userFeedback != null) {
             LocalTime currentTime = LocalTime.now();
-            boolean todaysFeedbackRequired = currentTime.getHour() >= 16;
-            if (todaysFeedbackRequired) {
-                if (userFeedback.size() == 0) {
-                    notificationHandler.obtainMessage(1, "You have not yet given feedback on your experience! Please open up the side menu and leave feedback for today!").sendToTarget();
-                } else {
-                    userFeedback.sort((o1, o2) -> o2.compareTo(o1));
-                    Feedback latestFeedback = userFeedback.get(0);
-                    LocalDate today = LocalDate.now();
+            LocalDate today = LocalDate.now();
+            boolean sendPing = currentTime.getHour() >= Constants.FEEDBACK_PING_HOUR;
+            boolean isUrgent = currentTime.getHour() >= Constants.FEEDBACK_URGENT_HOUR;
+            long daysSinceUserCreated = user.getCreationDate().toLocalDate().until(today, ChronoUnit.DAYS);
+            if (userFeedback.size() == 0 && (sendPing || daysSinceUserCreated >= 1)) {
+                sendFeedbackAlert("You have not yet given feedback on your experience! Please open up the side menu and leave feedback for today!", isUrgent);
+            } else if (userFeedback.size() > 0) {
+                userFeedback.sort((o1, o2) -> o2.compareTo(o1));
+                Feedback latestFeedback = userFeedback.get(0);
 
-                    if (latestFeedback.getDate().toLocalDate().isBefore(today)) {
-                        notificationHandler.obtainMessage(1, "Please complete the feedback form for today!").sendToTarget();
-                    }
-
+                boolean noFeedbackToday = latestFeedback.getDate().toLocalDate().isBefore(today);
+                boolean noFeedbackYesterday = latestFeedback.getDate().toLocalDate()
+                        .isBefore(today.minus(1, ChronoUnit.DAYS));
+                if (noFeedbackToday && sendPing) {
+                    sendFeedbackAlert("Please complete the feedback form for today.", isUrgent);
+                } else if (noFeedbackYesterday) {
+                    sendFeedbackAlert("Please complete the feedback form every day if possible. Open up the side menu to leave feedback!", isUrgent);
                 }
             }
         }
     }
 
-    private void setupFeedbackCheck() {
-        Log.d(TAG, "setupFeedbackCheck Called");
-        try {
-            timer = new Timer();
-            TimerTask checkFeedback = new TimerTask() {
-                @Override
-                public void run() {
-                    checkForFeedback();
-                }
-            };
-            timer.schedule(checkFeedback, TimeUnit.SECONDS.toMillis(3), TimeUnit.MINUTES.toMillis(3));
-        } catch (Exception e) {
-            Log.e(TAG, "onResume: Error starting checkFeedback", e);
+    public void sendFeedbackAlert(String msg, boolean isUrgent) {
+        if (isUrgent) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Feedback Required!").setMessage(msg).show();
+        } else {
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
         }
-    }
 
-    private void removeFeedbackCheck() {
-        Log.d(TAG, "removeFeedbackCheck Called");
-        try {
-            timer.cancel();
-        } catch (Exception e) {
-            Log.e(TAG, "onResume: Error stopping checkFeedback", e);
-        }
     }
 
 }

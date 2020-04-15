@@ -15,11 +15,13 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
+import com.ui.fitit.data.model.FitDate;
 import com.ui.fitit.data.model.User;
 import com.ui.fitit.ui.main.MainActivity;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -91,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
     private void signUpNewUser(String username, String password, String fullName) {
         String hashedPassword = hashPassword(password);
 
-        User user = new User(username, hashedPassword, fullName, 0L);
+        User user = new User(username, hashedPassword, fullName, 0L, new FitDate(LocalDate.now()));
         users.document(user.getUsername()).set(user);
         loginUser(username);
     }
