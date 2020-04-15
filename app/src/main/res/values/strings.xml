@@ -58,9 +58,10 @@
     </string-array>
 
     <string name="submit_button">Submit feedback</string>
-    <string name="feedback_q1">How motivated were you today to pursue your fitness goal?</string>
-    <string name="feedback_q2">If you tried exercised today, how much did you actually complete?</string>
+    <string name="feedback_q1">How motivated are you to pursue your fitness goal?</string>
+    <string name="feedback_q2">How much of your goal today did you actually complete?</string>
     <string name="feedback_q3">How are you feeling today?</string>
+    <string name="feedback_q4">Did you work towards your fitness goal today?</string>
     <string name="m1_text">None</string>
     <string name="m1">1</string>
     <string name="m2">2</string>
