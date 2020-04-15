@@ -19,6 +19,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -30,14 +31,18 @@ import com.ui.fitit.data.model.Attendance;
 import com.ui.fitit.data.model.Event;
 import com.ui.fitit.data.model.FitDate;
 import com.ui.fitit.data.model.Frequency;
+import com.ui.fitit.data.model.Group;
+import com.ui.fitit.data.model.Message;
 import com.ui.fitit.data.model.ScheduleItem;
 import com.ui.fitit.data.model.Session;
+import com.ui.fitit.data.model.User;
 import com.ui.fitit.ui.newevent.NewEventActivity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ScheduleFragment extends Fragment {
@@ -171,7 +176,6 @@ public class ScheduleFragment extends Fragment {
         // Set current session as completed
         if (session.getAttendance() == Attendance.UPCOMING) {
             WriteBatch batch = db.batch();
-            activity.user.updatePoints(newAttendance, event, activity.userCollection);
 
             session.setAttendance(newAttendance);
             batch.set(sessionCollection.document(session.getId()), session);
@@ -183,9 +187,54 @@ public class ScheduleFragment extends Fragment {
                 Session newSession = new Session(newDate, event.getId(), Attendance.UPCOMING);
                 batch.set(sessionCollection.document(newSession.getId()), newSession);
             }
-
+            updateGroupPoints(newAttendance, event);
             batch.commit();
         }
+    }
+
+    private void updateGroupPoints(Attendance newAttendance, Event event) {
+        Log.d(TAG, "updateGroupPoints Called");
+        CollectionReference groupCollection = db.collection(Constants.GROUPS_COLLECTION);
+
+        groupCollection.whereArrayContains("users", activity.user.getUsername()).get().addOnSuccessListener(query -> {
+            Log.d(TAG, "updateGroupPoints: Fetching groups for which the user is a part of");
+            List<Group> groupsWithUser = Objects.requireNonNull(query.toObjects(Group.class)).stream().filter(Objects::nonNull).collect(Collectors.toList());
+            if (groupsWithUser.size() == 1) {
+                Log.d(TAG, "updateGroupPoints: User is in a group");
+                Group group = groupsWithUser.get(0);
+                WriteBatch batch = db.batch();
+                AtomicInteger updatedUsers = new AtomicInteger();
+                DocumentReference groupDocument = groupCollection.document(group.getId());
+
+                group.getUsers().forEach(username -> {
+                    activity.userCollection.document(username).get().addOnSuccessListener(document -> {
+                        User user = document.toObject(User.class);
+                        if (user != null) {
+                            user.updatePoints(newAttendance, event, activity.userCollection);
+                            updatedUsers.getAndIncrement();
+                            batch.set(activity.userCollection.document(user.getUsername()), user);
+                            if (updatedUsers.get() == group.getUsers().size()) {
+                                batch.commit();
+                            }
+                        }
+                    });
+                });
+
+                CollectionReference messageCollection = groupDocument.collection(Constants.MESSAGE_COLLECTION);
+                String messageString = activity.user.getUsername()
+                        + (newAttendance == Attendance.MISSED
+                        ? " missed a session! Everyone loses points..."
+                        : " completed a session! Everyone gets some points!");
+                Message message = new Message(System.currentTimeMillis(), messageString, getString(R.string.app_name));
+                messageCollection.document(message.getId()).set(message);
+
+            } else if (groupsWithUser.size() == 0) {
+                Log.d(TAG, "updateGroupPoints: User is not in a group");
+                activity.user.updatePoints(newAttendance, event, activity.userCollection);
+                activity.userCollection.document(activity.user.getUsername()).set(activity.user);
+            }
+        });
+
     }
 
 

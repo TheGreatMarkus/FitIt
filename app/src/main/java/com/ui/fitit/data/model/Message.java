@@ -18,12 +18,12 @@ public class Message {
     final String id = UUID.randomUUID().toString();
     long timestamp;
     String text;
-    String username;
+    String sender;
 
     @Override
     @NonNull
     public String toString() {
-        return String.format("%s: %s", username, text);
+        return String.format("%s: %s", sender, text);
     }
 
     public int compareTo(Message o) {
