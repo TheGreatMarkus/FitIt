@@ -159,7 +159,7 @@ public class GroupFragment extends Fragment {
 
 
     private void createNewMessage() {
-        String messageText = newMessageText.getText().toString();
+        String messageText = newMessageText.getText().toString().trim();
         if (messageText.isEmpty()) {
             Toast.makeText(activity, "You can't send an empty message!", Toast.LENGTH_SHORT).show();
         } else {
