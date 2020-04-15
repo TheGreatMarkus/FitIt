@@ -4,11 +4,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/user_profile_header"
             android:layout_width="411dp"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:background="@color/colorPrimary"
+            app:layout_constraintBottom_toTopOf="@+id/profile_username_lin_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -35,7 +38,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
+            app:layout_constraintBottom_toTopOf="@+id/profile_name_lin_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/user_profile_header">
 
         <TextView
@@ -60,7 +67,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="3dp"
             android:gravity="center"
+            app:layout_constraintBottom_toTopOf="@+id/profile_progression_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profile_username_lin_layout">
 
         <TextView
@@ -86,32 +97,23 @@
     </LinearLayout>
 
 
-    <TextView
-            android:id="@+id/profile_progression_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Progression"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profile_name_lin_layout" />
-
     <LinearLayout
             android:id="@+id/profile_level_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             android:gravity="center"
             android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/points_linear_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/profile_progression_text">
+            app:layout_constraintTop_toBottomOf="@+id/profile_progression_text">
 
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Level: "
+                android:layout_marginEnd="8dp"
+                android:text="Level:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
         <TextView
@@ -123,11 +125,37 @@
     </LinearLayout>
 
 
+    <LinearLayout
+            android:id="@+id/points_linear_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_level_layout">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="@string/profile_point"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+        <TextView
+                android:id="@+id/point_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile_intial_point"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+    </LinearLayout>
+
     <ProgressBar
             android:id="@+id/profile_progress_bar"
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_width="152dp"
+            android:layout_height="13dp"
             android:layout_marginTop="16dp"
             android:progress="1"
             android:progressBackgroundTint="@color/colorAccentDark"
@@ -135,7 +163,21 @@
             android:scaleY="2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/profile_level_layout" />
+            app:layout_constraintTop_toBottomOf="@+id/points_linear_layout" />
+
+    <TextView
+            android:id="@+id/profile_progression_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="1dp"
+            android:text="Progression"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/profile_level_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_name_lin_layout" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
