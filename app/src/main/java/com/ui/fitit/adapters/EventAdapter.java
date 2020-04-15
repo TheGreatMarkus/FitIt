@@ -51,7 +51,7 @@ public class EventAdapter extends ArrayAdapter<ScheduleItem> {
         TextView itemMonth = view.findViewById(R.id.item_month);
 
         // Set element values
-        itemTitle.setText(item.getName());
+        itemTitle.setText(String.format("%s - %s", item.getName(), item.getAttendance()));
         // itemTitle.setText(String.format("%s - %s - %s", item.getName(), item.getFrequency(), item.getAttendance()));
         itemTime.setText(String.format("%s - %s",
                 item.getStartTime().toString(),
