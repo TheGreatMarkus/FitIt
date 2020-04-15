@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private DrawerLayout drawer;
     private SharedPreferences sp;
+    private UserProfileFragment userProfileFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             User updatedUser = document.toObject(User.class);
             if (updatedUser != null) {
                 user = updatedUser;
+                userProfileFragment.updateProgressBar(user);
             } else {
                 Toast.makeText(this, "User " + user.getUsername() + "no longer exist! Redirecting", Toast.LENGTH_SHORT).show();
                 logout();
@@ -118,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void initViews(Bundle savedInstanceState) {
+        userProfileFragment = new UserProfileFragment();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -145,8 +149,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new ScheduleFragment()).commit();
                 break;
             case R.id.nav_user_profile:
+
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new UserProfileFragment()).commit();
+                        userProfileFragment).commit();
                 break;
             case R.id.nav_group:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,

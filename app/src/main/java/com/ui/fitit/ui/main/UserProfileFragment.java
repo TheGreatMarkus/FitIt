@@ -17,28 +17,36 @@ import com.ui.fitit.data.model.User;
 public class UserProfileFragment extends Fragment {
 
     private static final String TAG = "UserProfileFragment";
+    private ProgressBar progressBar;
+    private MainActivity activity;
+    private TextView levelTextView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
-        MainActivity activity = (MainActivity) requireActivity();
-        initViews(view, activity.user);
+        activity = (MainActivity) requireActivity();
+        initViews(view);
 
         return view;
     }
 
+    public void updateProgressBar(User user) {
+        if (progressBar != null && user != null && levelTextView != null) {
+            progressBar.setProgress(user.getLevelProgress().intValue());
+            levelTextView.setText(activity.user.getLevel().toString());
+        }
+    }
 
-    private void initViews(View view, User user) {
+    private void initViews(View view) {
         TextView usernameTextView = view.findViewById(R.id.profile_username);
         TextView fullNameTextView = view.findViewById(R.id.profile_full_name);
-        TextView levelTextView = view.findViewById(R.id.profile_level_text);
-        ProgressBar progressBar = view.findViewById(R.id.profile_progress_bar);
+        levelTextView = view.findViewById(R.id.profile_level_text);
+        progressBar = view.findViewById(R.id.profile_progress_bar);
 
-        usernameTextView.setText(user.getUsername());
-        fullNameTextView.setText(user.getFullName());
-        levelTextView.setText(user.getLevel().toString());
-        progressBar.setProgress(user.getLevelProgress().intValue());
+        usernameTextView.setText(activity.user.getUsername());
+        fullNameTextView.setText(activity.user.getFullName());
+        updateProgressBar(activity.user);
 
 
     }
