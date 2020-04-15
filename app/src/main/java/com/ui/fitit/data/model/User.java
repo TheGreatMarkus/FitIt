@@ -40,6 +40,9 @@ public class User implements Serializable {
             userCollection.document(username).set(this);
         } else if (newAttendance == Attendance.MISSED) {
             updatePoints(-10L);
+            if (points < 0) {
+                points = 0;
+            }
             userCollection.document(username).set(this);
         }
     }

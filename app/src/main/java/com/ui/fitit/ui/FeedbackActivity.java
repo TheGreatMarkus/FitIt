@@ -33,7 +33,7 @@ public class FeedbackActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection(Constants.USERS_COLLECTION);
-    private CollectionReference feedback;
+    private CollectionReference feedbackCollection;
 
     @Motivation
     private int motivationSelected;
@@ -87,7 +87,7 @@ public class FeedbackActivity extends AppCompatActivity {
         Intent intent = getIntent();
         user = (User) intent.getSerializableExtra(Constants.INTENT_EXTRA_USER);
         if (user != null && user.getUsername() != null) {
-            feedback = users.document(user.getUsername()).collection(Constants.FEEDBACK_COLLECTION);
+            feedbackCollection = users.document(user.getUsername()).collection(Constants.FEEDBACK_COLLECTION);
         } else {
             Toast.makeText(this, "Unexpected state. You are not logged in. Redirecting to main screen", Toast.LENGTH_SHORT).show();
             finish();
@@ -189,7 +189,7 @@ public class FeedbackActivity extends AppCompatActivity {
             Log.d(TAG, "onSubmitFeedback: New Feedback submitted: " + newFeedback);
             Toast.makeText(this, "Feedback submitted successfully", Toast.LENGTH_SHORT).show();
 
-            this.feedback.document(newFeedback.getId()).set(newFeedback).addOnFailureListener(e -> {
+            this.feedbackCollection.document(newFeedback.getId()).set(newFeedback).addOnFailureListener(e -> {
                 Log.d(TAG, "onSubmitFeedback: Error occured while submitting feedback!", e);
             });
             finish();
