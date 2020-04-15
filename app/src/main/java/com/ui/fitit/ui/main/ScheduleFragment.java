@@ -21,6 +21,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.ui.fitit.Constants;
@@ -52,6 +53,7 @@ public class ScheduleFragment extends Fragment {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference eventCollection;
     private CollectionReference sessionCollection;
+    private ListenerRegistration sessionCollectionRegistration;
     private EventAdapter adapter;
     private MainActivity activity;
 
@@ -79,10 +81,17 @@ public class ScheduleFragment extends Fragment {
         return view;
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
-        sessionCollection.addSnapshotListener(activity, this::updateScheduleData);
+        sessionCollectionRegistration = sessionCollection.addSnapshotListener(this::updateScheduleData);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        sessionCollectionRegistration.remove();
     }
 
     private void initViews(View view) {

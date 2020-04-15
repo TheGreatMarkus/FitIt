@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String TAG = "MainActivity";
     final FirebaseFirestore db = FirebaseFirestore.getInstance();
     final CollectionReference userCollection = db.collection(Constants.USERS_COLLECTION);
-    final CollectionReference groupCollection = db.collection(Constants.GROUPS_COLLECTION);
     CollectionReference feedbackCollection;
 
     User user;
@@ -73,16 +72,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         };
     }
 
+
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
         setupFeedbackCheck();
+        feedbackCollection.addSnapshotListener(this, (query, e1) -> {
+            Log.d(TAG, "initInformation: feedbackCollection addSnapshotListener called");
+            userFeedback = Objects.requireNonNull(query)
+                    .toObjects(Feedback.class)
+                    .stream().filter(Objects::nonNull).collect(Collectors.toList());
+        });
+//
+        userCollection.document(user.getUsername()).addSnapshotListener(this, (document, e) -> {
+            Log.d(TAG, "initInformation userCollection addSnapshotListener called");
+            User updatedUser = document.toObject(User.class);
+            if (updatedUser != null) {
+                user = updatedUser;
+                userProfileFragment.updateProgressBar(user);
+            } else {
+                Toast.makeText(this, "User " + user.getUsername() + "no longer exist! Redirecting", Toast.LENGTH_SHORT).show();
+                logout();
+            }
+        });
     }
 
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
         removeFeedbackCheck();
     }
 
@@ -100,23 +118,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         feedbackCollection = userCollection.document(user.getUsername()).collection(Constants.FEEDBACK_COLLECTION);
-
-        feedbackCollection.addSnapshotListener(this, (query, e1) ->
-                userFeedback = Objects.requireNonNull(query)
-                        .toObjects(Feedback.class)
-                        .stream().filter(Objects::nonNull).collect(Collectors.toList())
-        );
-
-        userCollection.document(user.getUsername()).addSnapshotListener(this, (document, e) -> {
-            User updatedUser = document.toObject(User.class);
-            if (updatedUser != null) {
-                user = updatedUser;
-                userProfileFragment.updateProgressBar(user);
-            } else {
-                Toast.makeText(this, "User " + user.getUsername() + "no longer exist! Redirecting", Toast.LENGTH_SHORT).show();
-                logout();
-            }
-        });
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initViews(Bundle savedInstanceState) {
@@ -195,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     private void checkForFeedback() {
+        Log.d(TAG, "checkForFeedback Called");
         if (user != null && userFeedback != null) {
             LocalTime currentTime = LocalTime.now();
             boolean todaysFeedbackRequired = currentTime.getHour() >= 16;

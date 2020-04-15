@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
@@ -33,6 +34,7 @@ public class GroupSearchFragment extends Fragment {
     private static final String TAG = "GroupFragment";
 
     private CollectionReference groupCollection;
+    private ListenerRegistration groupCollectionRegistration;
     private MainActivity activity;
     private List<Group> groups = new ArrayList<>();
     private List<String> groupNames = new ArrayList<>();
@@ -51,11 +53,12 @@ public class GroupSearchFragment extends Fragment {
         return view;
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
         groupCollection = activity.db.collection(Constants.GROUPS_COLLECTION);
-        groupCollection.addSnapshotListener(activity, this::fetchGroupInformation);
+        groupCollectionRegistration = groupCollection.addSnapshotListener(this::fetchGroupInformation);
 
         groupCollection.whereArrayContains("users", activity.user.getUsername()).get().addOnSuccessListener(query -> {
             Log.d(TAG, "onStart: Looking to see if user is already in a group");
@@ -69,6 +72,12 @@ public class GroupSearchFragment extends Fragment {
 
             }
         });
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        groupCollectionRegistration.remove();
     }
 
     private void goToGroupFragment(@NonNull Group group) {

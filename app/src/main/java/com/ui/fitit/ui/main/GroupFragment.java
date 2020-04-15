@@ -22,6 +22,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ui.fitit.Constants;
 import com.ui.fitit.R;
@@ -39,7 +40,9 @@ public class GroupFragment extends Fragment {
     private MainActivity activity;
 
     private DocumentReference groupDocument;
+    private ListenerRegistration groupDocumentRegistration;
     private CollectionReference messageCollection;
+    private ListenerRegistration messageCollectionRegistration;
 
 
     private boolean showMessages = false;
@@ -74,14 +77,27 @@ public class GroupFragment extends Fragment {
         messageAdapter = new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, messageStrings);
 
         groupDocument = db.collection(Constants.GROUPS_COLLECTION).document(activity.group.getId());
-        groupDocument.addSnapshotListener(activity, this::onGroupUpdate);
+
 
         messageCollection = groupDocument.collection(Constants.MESSAGE_COLLECTION);
-        messageCollection.addSnapshotListener(activity, this::onMessageUpdate);
+
 
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        groupDocumentRegistration = groupDocument.addSnapshotListener(this::onGroupUpdate);
+        messageCollectionRegistration = messageCollection.addSnapshotListener(this::onMessageUpdate);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        groupDocumentRegistration.remove();
+        messageCollectionRegistration.remove();
+    }
 
     private void initViews(View view) {
         // Existing Group View
