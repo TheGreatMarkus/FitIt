@@ -34,10 +34,13 @@ public class User implements Serializable {
         return (float) (points % Constants.POINTS_PER_LEVEL) / (float) Constants.POINTS_PER_LEVEL * 100;
     }
 
-    public void updatePoints(Attendance newAttendance, Event event, CollectionReference users) {
+    public void updatePoints(Attendance newAttendance, Event event, CollectionReference userCollection) {
         if (newAttendance == Attendance.COMPLETED) {
             updatePoints(10L);
-            users.document(username).set(this);
+            userCollection.document(username).set(this);
+        } else if (newAttendance == Attendance.MISSED) {
+            updatePoints(-10L);
+            userCollection.document(username).set(this);
         }
     }
 }
