@@ -137,19 +137,20 @@ public class ScheduleFragment extends Fragment {
 
     private void verifySchedule() {
         Log.d(TAG, "verifySchedule Called");
+        WriteBatch batch = db.batch();
+        AtomicInteger pendingUpdates = new AtomicInteger();
+
         scheduleMap.asMap().forEach((event, eventSessions) -> {
             eventSessions.forEach(session -> {
                 LocalDateTime currentDT = LocalDateTime.now();
                 LocalDateTime itemDT = LocalDateTime.of(session.getDate().toLocalDate(), event.getEndTime().toLocalTime());
                 if (itemDT.isBefore(currentDT) && session.getAttendance() == Attendance.UPCOMING) {
-
+                    pendingUpdates.getAndIncrement();
                     AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                     builder.setPositiveButton("Completed", (dialog, which) -> {
-                        onSessionAttended(event, session, Attendance.COMPLETED);
-                        updateShownSchedule();
+                        onSessionAttended(event, session, Attendance.COMPLETED, batch, pendingUpdates);
                     }).setNegativeButton("Missed", (dialog, which) -> {
-                        onSessionAttended(event, session, Attendance.MISSED);
-                        updateShownSchedule();
+                        onSessionAttended(event, session, Attendance.MISSED, batch, pendingUpdates);
                     }).setTitle("An upcoming session now passed!")
                             .setMessage(String.format("\"%s\" was an upcoming event that now passed. Did you complete or miss it?", event.getName())).show();
                 }
@@ -177,11 +178,10 @@ public class ScheduleFragment extends Fragment {
         adapter.notifyDataSetChanged();
     }
 
-    public void onSessionAttended(Event event, Session session, Attendance newAttendance) {
+    public void onSessionAttended(Event event, Session session, Attendance newAttendance, WriteBatch batch, AtomicInteger pendingUpdates) {
         Log.d(TAG, "onSessionAttended Called");
         // Set current session as completed
         if (session.getAttendance() == Attendance.UPCOMING) {
-            WriteBatch batch = db.batch();
 
             session.setAttendance(newAttendance);
             batch.set(sessionCollection.document(session.getId()), session);
@@ -194,6 +194,9 @@ public class ScheduleFragment extends Fragment {
                 batch.set(sessionCollection.document(newSession.getId()), newSession);
             }
             updateGroupPoints(newAttendance, event);
+            pendingUpdates.decrementAndGet();
+        }
+        if (pendingUpdates.get() == 0) {
             batch.commit();
         }
     }
