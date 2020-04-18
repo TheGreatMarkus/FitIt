@@ -151,6 +151,9 @@ public class ScheduleFragment extends Fragment {
                         onSessionAttended(event, session, Attendance.COMPLETED, batch, pendingUpdates);
                     }).setNegativeButton("Missed", (dialog, which) -> {
                         onSessionAttended(event, session, Attendance.MISSED, batch, pendingUpdates);
+                    }).setOnCancelListener(dialog -> {
+                        pendingUpdates.decrementAndGet();
+                        batchCommitAttempt(batch, pendingUpdates);
                     }).setTitle("An upcoming session now passed!")
                             .setMessage(String.format("\"%s\" was an upcoming event that now passed. Did you complete or miss it?", event.getName())).show();
                 }
@@ -196,6 +199,10 @@ public class ScheduleFragment extends Fragment {
             updateGroupPoints(newAttendance, event);
             pendingUpdates.decrementAndGet();
         }
+        batchCommitAttempt(batch, pendingUpdates);
+    }
+
+    private void batchCommitAttempt(WriteBatch batch, AtomicInteger pendingUpdates) {
         if (pendingUpdates.get() == 0) {
             batch.commit();
         }
