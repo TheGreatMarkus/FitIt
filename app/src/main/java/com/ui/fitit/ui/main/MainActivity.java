@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MainActivity";
-    final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    public final FirebaseFirestore db = FirebaseFirestore.getInstance();
     final CollectionReference userCollection = db.collection(Constants.USERS_COLLECTION);
     CollectionReference feedbackCollection;
 

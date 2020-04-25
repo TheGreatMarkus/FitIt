@@ -1,6 +1,5 @@
 package com.ui.fitit.adapters;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,28 +9,33 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.firestore.WriteBatch;
 import com.ui.fitit.R;
 import com.ui.fitit.data.model.Attendance;
 import com.ui.fitit.data.model.ScheduleItem;
+import com.ui.fitit.ui.main.MainActivity;
 import com.ui.fitit.ui.main.ScheduleFragment;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventAdapter extends ArrayAdapter<ScheduleItem> {
 
     private ScheduleFragment scheduleFragment;
-    private Context context;
+    private MainActivity activity;
 
 
-    public EventAdapter(@NonNull Context context, ScheduleFragment scheduleFragment, int textViewResourceId) {
-        super(context, textViewResourceId, scheduleFragment.scheduleItems);
+    public EventAdapter(@NonNull MainActivity activity, ScheduleFragment scheduleFragment, int textViewResourceId) {
+        super(activity, textViewResourceId, scheduleFragment.scheduleItems);
         this.scheduleFragment = scheduleFragment;
-        this.context = context;
+        this.activity = activity;
+
     }
 
     @Override
     @NonNull
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.schedule_item, parent, false);
+            convertView = LayoutInflater.from(activity).inflate(R.layout.schedule_item, parent, false);
         }
         ScheduleItem item = getItem(position);
         if (item != null) {
@@ -69,7 +73,9 @@ public class EventAdapter extends ArrayAdapter<ScheduleItem> {
         itemCompleteCheckbox.setChecked(false);
         itemCompleteCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                scheduleFragment.onSessionAttended(item.getEvent(), item.getSession(), Attendance.COMPLETED);
+                WriteBatch batch = activity.db.batch();
+                AtomicInteger updates = new AtomicInteger(1);
+                scheduleFragment.onSessionAttended(item.getEvent(), item.getSession(), Attendance.COMPLETED, batch, updates);
             }
         });
     }
