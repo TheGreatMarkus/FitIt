@@ -4,6 +4,8 @@ FitIt is a fitness scheduler/tracker which has the goal of helping the user keep
 
 When it comes to fitness, FitIt can help you "Fit It" in your routine!
 
+Note that you need Android 8 or higher to run the application.
+
 ### Setting up your development environment
 
 1. Download Android studio and the Android SDK: https://developer.android.com/studio
