@@ -17,3 +17,7 @@ Note that you need Android 8 or higher to run the application.
 5. Create an emulator or plug in your android phone and make sure Android Studio recognized your device
 6. Run the application.
 7. Have fun!
+
+### Running an APK
+
+APKs are available to download and install from the releases tab! Get the latest version here: https://github.com/TheGreatMarkus/FitIt/releases
